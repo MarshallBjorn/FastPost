@@ -1,4 +1,59 @@
-## Baza danych
+## Running project locally
+
+First, create ```.env``` file in src:
+```bash
+cd src
+cp .env.example .env
+```
+
+Then to run locally type
+```
+docker-compose up -d --build
+docker-compose exec app php artisan migrate
+```
+
+Then your laravel application should now be accessible at:
+```
+http://localhost:8000
+```
+
+### Small cheatsheet for Docker-compose
+- To stop the containers:
+  ```bash
+  docker-compose down
+  ```
+
+- To start the containers again:
+  ```bash
+  docker-compose up -d
+  ```
+
+- To run Artisan commands:
+  ```bash
+  docker-compose exec app php artisan [command]
+  ```
+
+- To enter the app container:
+  ```bash
+  docker-compose exec app bash
+  ```
+
+- To view logs:
+  ```bash
+  docker-compose logs -f
+  ```
+---
+
+**Notes**
+1. The setup uses PostgreSQL 15 with Alpine Linux for a lightweight container.
+2. Nginx is configured to serve the Laravel application.
+3. The PHP container includes all necessary extensions for Laravel and PostgreSQL.
+4. The database data is persisted in a Docker volume so it survives container restarts.
+5. The composer service ensures dependencies are installed during the build process.
+
+
+## TODO Revise this below readme section.
+### Baza danych
 
 ---
 ### **Tabela: `Paczkomaty`**
@@ -109,3 +164,17 @@
 | `utworzono` | DATETIME | kiedy miało miejsce wydarzenie |
 
 ---
+
+
+Edit `src/.env`:
+
+```ini
+DB_CONNECTION=pgsql
+DB_HOST=db
+DB_PORT=5432
+DB_DATABASE=laravel
+DB_USERNAME=laravel
+DB_PASSWORD=secret
+```
+
+
