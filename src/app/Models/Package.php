@@ -23,13 +23,13 @@ class Package extends Model
         'recieval_date'
     ];
 
-    // public function sender() {
-    //     return $this->belongsTo(User::class, 'sender_id');
-    // }
+    public function sender() {
+       return $this->belongsTo(User::class, 'sender_id');
+    }
 
-    // public function reciever() {
-    //     return $this->belongsTo(User::class, 'reciever_id');
-    // }
+    public function reciever() {
+        return $this->belongsTo(User::class, 'reciever_id');
+    }
 
     public function postmat() {
         return $this->belongsTo(Postmat::class);
