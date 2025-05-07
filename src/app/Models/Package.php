@@ -9,26 +9,26 @@ class Package extends Model
 {
     use HasFactory;
 
-    protected $table = 'stashes';
+    protected $table = 'packages';
 
     protected $fillable = [
         'sender_id',
-        'goal_postmat_ud',
-        'reciever_email',
-        'reciever_phone',
-        'reciever_id',
+        'receiver_id',
+        'destination_postmat_id',
+        'receiver_email',
+        'receiver_phone',
         'status',
-        'register_date',
+        'sent_at',
         'delivered_date',
-        'recieval_date'
+        'collected_date'
     ];
 
     public function sender() {
        return $this->belongsTo(User::class, 'sender_id');
     }
 
-    public function reciever() {
-        return $this->belongsTo(User::class, 'reciever_id');
+    public function receiver() {
+        return $this->belongsTo(User::class, 'receiver_id');
     }
 
     public function postmat() {

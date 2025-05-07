@@ -16,23 +16,23 @@ return new class extends Migration
             $table->string('pickup_code')->nullable();
 
             $table->unsignedBigInteger('sender_id');
-            $table->unsignedBigInteger('goal_postmat_id');
+            $table->unsignedBigInteger('receiver_id');
+            $table->unsignedBigInteger('destination_postmat_id');
 
-            $table->string('reciever_email');
-            $table->string('reciever_phone');
-            $table->unsignedBigInteger('reciever_id');
+            $table->string('receiver_email');
+            $table->string('receiver_phone');
 
-            $table->enum('status', ['registered', 'on_the_way', 'in_delivery', 'in_postmat', 'delivered']);
-            
-            $table->dateTime('register_date');
-            $table->dateTime('delivered_date')->nullable();
-            $table->dateTime('recieval_date')->nullable();
-            
+            $table->enum('status', ['registered', 'in_transit', 'in_postmat', 'collected']);
+
+            $table->dateTime('sent_at');
+            $table->dateTime('delivered_at')->nullable();
+            $table->dateTime('collected_at')->nullable();
+
             $table->timestamps();
-            
+
             $table->foreign('sender_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('goal_postmat_id')->references('id')->on('postmats')->onDelete('cascade');
-            $table->foreign('reciever_id')->references('id')->on('users')->nullOnDelete();
+            $table->foreign('destination_postmat_id')->references('id')->on('postmats')->onDelete('cascade');
+            $table->foreign('receiver_id')->references('id')->on('users')->nullOnDelete();
         });
     }
 

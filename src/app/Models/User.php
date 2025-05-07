@@ -54,6 +54,6 @@ class User extends Authenticatable
     }
 
     public function packagesRecieved() {
-        return $this->hasMany(Package::class, 'reciever_id');
+        return $this->hasMany(Package::class, 'receiver_id');
     }
 }

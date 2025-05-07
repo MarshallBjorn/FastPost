@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('city');
             $table->string("post-code");
             $table->decimal("latitude", 10, 7);
-            $table->decimal("longtitude", 10, 7);
-            $table->enum('status', ['active', 'n/a', 'service']);
+            $table->decimal("longitude", 10, 7);
+            $table->enum('status', ['active', 'unavailable', 'maintenance']);
             $table->timestamps();
         });
     }

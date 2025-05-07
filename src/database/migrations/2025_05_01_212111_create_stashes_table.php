@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('postmat_id');
             $table->enum("size", ["S", "M", "L"]);
             $table->unsignedBigInteger('package_id')->nullable();
-            
+
             $table->timestamps();
 
             $table->foreign('postmat_id')->references('id')->on('postmats')->onDelete('cascade');

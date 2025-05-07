@@ -16,7 +16,7 @@ class Postmat extends Model
         'city',
         'post-code',
         'latitude',
-        'longtitude',
+        'longitude',
         'status'
     ];
 

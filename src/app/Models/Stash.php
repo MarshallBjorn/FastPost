@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Stash extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'stashes';
 
     protected $fillable = [
