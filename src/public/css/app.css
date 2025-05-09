@@ -9,4 +9,23 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
-    
+
+.form-input {
+    padding: 0.5rem;
+    width: 100%;
+    border: 2px;
+    border-style: dotted;
+}
+
+.form-submit {
+    padding: 0.5rem;
+    background-color: #f3f4f6;
+    border: 2px;
+    border-style: dotted;
+    padding-block: 0.5rem;
+    padding-inline: 1rem;
+}
+
+.custom-white-shadow {
+    box-shadow: inset 0 4px 6px rgba(255, 255, 255, 0.1); /* Light white shadow */
+}
