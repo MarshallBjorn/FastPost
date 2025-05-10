@@ -23,6 +23,17 @@ class Package extends Model
         'collected_date'
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($package) {
+            if (empty($package->sent_at)) {
+                $package->sent_at = now();
+            }
+        });
+    }
+
     public function sender() {
        return $this->belongsTo(User::class, 'sender_id');
     }
