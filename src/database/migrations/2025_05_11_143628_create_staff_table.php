@@ -16,7 +16,7 @@ return new class extends Migration
             $table->enum('staff_type', ['admin', 'courier', 'warehouse']);
             $table->unsignedBigInteger('warehouse_id')->nullable();
             $table->dateTime('hire_date');
-            $table->dateTime('termination_data')->nullable();
+            $table->dateTime('termination_date')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
