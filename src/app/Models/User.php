@@ -22,7 +22,6 @@ class User extends Authenticatable
         'last_name',
         'email',
         'phone',
-        'user_type',
         'password',
     ];
 
@@ -55,5 +54,15 @@ class User extends Authenticatable
 
     public function packagesRecieved() {
         return $this->hasMany(Package::class, 'receiver_id');
+    }
+
+    public function staff()
+    {
+        return $this->hasOne(Staff::class,'user_id');
+    }
+
+    public function verify()
+    {
+        return $this->hasOne(Verify::class,'user_id');
     }
 }

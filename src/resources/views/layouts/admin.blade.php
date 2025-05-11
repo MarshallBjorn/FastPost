@@ -15,7 +15,7 @@
         <a href="{{ route('admin.dashboard') }}" class="p-3 text-2xl border-dotted border-r-2">Admin Panel</a>
         <div class="my-auto px-5 flex gap-x-6">
             <a href="{{ route('packages.index') }}">dowozy</a>
-            <a href="">Paczkomaty</a>
+            <a href="{{ route('postmats.index') }}">Paczkomaty</a>
             <a href="">konta</a>
         </div>        
     </header>

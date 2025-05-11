@@ -5,14 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Postmat extends Model
+class Warehouse extends Model
 {
     use HasFactory;
 
-    protected $table = 'postmats';
+    protected $table = 'warehouses';
 
     protected $fillable = [
-        'name',
         'city',
         'post_code',
         'latitude',
@@ -20,7 +19,16 @@ class Postmat extends Model
         'status'
     ];
 
-    public function stashes(){
+    public function stashes() {
         return $this->hasMany(Stash::class);
+    }
+
+    public function staff() {
+        return $this->hasMany(Staff::class);
+    }
+
+    public function actualization()
+    {
+        return $this->hasMany(Actualization::class);
     }
 }

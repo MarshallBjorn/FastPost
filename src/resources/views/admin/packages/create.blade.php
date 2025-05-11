@@ -39,7 +39,7 @@
             <label>Postmat</label>
             <select name="destination_postmat_id" class="form-input">
                 @foreach ($postmats as $postmat)
-                    <option value="{{ $postmat->id }}">Postmat #{{ $postmat->id }}</option>
+                    <option value="{{ $postmat->id }}">{{ $postmat->name }}</option>
                 @endforeach
             </select>
         </div>

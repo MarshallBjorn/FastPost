@@ -56,7 +56,7 @@ class PackageController extends Controller
             $postmat = Postmat::create([
                 'name' => 'Fastpost-Tokyo',
                 'city' => 'Tokyo',
-                'post-code' => '33-200',
+                'post_code' => '33-200',
                 'latitude' => 35.6895,
                 'longitude' => 139.8394,
                 'status' => 'active'
