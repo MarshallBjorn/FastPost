@@ -14,8 +14,8 @@ class PostmatController extends Controller
      */
     public function index()
     {
-        $postmats = Postmat::all();
-        return view('admin.postmats.index', compact('postmats'));
+        $postmats = Postmat::paginate(10);
+        return view('postmats.index', compact('postmats'));
     }
 
     /**

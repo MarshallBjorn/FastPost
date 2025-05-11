@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PostmatPublicController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -18,6 +19,9 @@ Route::get('/login', function () {
 // });
 
 Route::get('/admin', [App\Http\Controllers\Admin\AdminController::class, 'index'])->name('admin.dashboard');
+
+Route::get('/postmats', [PostmatPublicController::class,'index'])->name('public.postmats.index');
+Route::get('/postmats/filter', [PostmatPublicController::class, 'filter'])->name('public.postmats.filter');
 
 Route::prefix('admin')->group(function () {
     Route::resource('packages', App\Http\Controllers\Admin\PackageController::class);
