@@ -84,6 +84,22 @@ http://localhost:8000
 
 ---
 
+### **Tabela: `Sortownie`**
+| Kolumna             | Typ danych         | Opis                                  |
+|---------------------|--------------------|----------------------------------------|
+| `id`                | INT (PK)           | Unikalny identyfikator sortowni         |
+| `miasto`            | VARCHAR            | Miasto                                |
+| `kod_pocztowy`      | VARCHAR            | Kod pocztowy                          |
+| `szerokosc_geo`     | DECIMAL            | Szerokość geograficzna                |
+| `dlugosc_geo`       | DECIMAL            | Długość geograficzna                  |
+| `status`            | ENUM               | np. 'aktywna', 'niedostępna', 'serwis'|
+
+#### Widoki do tabeli `Sortownie`
+- Widok ze wszystkimi sortowniami na mapie
+- Widok do administracji sortowniami
+
+---
+
 ### **Tabela: `Uzytkownicy`**
 | Kolumna             | Typ danych         | Opis                                  |
 |---------------------|--------------------|----------------------------------------|
@@ -92,13 +108,21 @@ http://localhost:8000
 | `nazwisko`          | VARCHAR            | Nazwisko                              |
 | `email`             | VARCHAR            | E-mail                                |
 | `telefon`           | VARCHAR            | Numer telefonu                        |
-| `haslo`             | VARCHAR (nada się na hasha(?)) | zaszyfrowane hasło        |
-| `typ_uzytkownika`   | ENUM | 'admin', 'kurier', 'zwykly', 'magazyn'              |
+| `haslo`             | VARCHAR            | zaszyfrowane hasło        |
 
-#### Logika stojąca za uzytkownikami
-- Uzytkownik moze stworzyć konto na 'oficjalnej' stronie. Wtedy typ uzytkownika to w naszym enumie `'zwykly'`
-- Uzytkownik kurier jest tworzony przez admina
+### **Tabela: `Pracownicy`**
+| Kolumna             | Typ danych         | Opis                                  |
+|---------------------|--------------------|----------------------------------------|
+| `uzytkownik_id`       | INT (FK → Uzytkownicy.id) (PK) | ID uzytkownika |
+| `typ_pracownika`      | ENUM | 'admin', 'kurier', 'magazyn' |
+| `sortownia_id`        | INT (FK → sortownia.id) (NULL) | ID sortowni do jakiej jest przypisany |
+| `data_zatrudnienia`   | DATETIME           | Data zatrudnienia |
+| `data_rozwiazania`    | DATETIME (NULL)    | Data rozwiązania umowy |
+
+#### Logika stojąca za uzytkownikami (i pracownikami)
+- Uzytkownik moze stworzyć konto na 'oficjalnej' stronie.
 - Uzytkownik powinien potwierdzic swoj e-mail (system weryfikacji emaili)
+- Pracownicy są tworzeni przez adminów i przypisywani do oddziałów (sortowni)
 
 #### Widoki uzytkownikow
 - Logowanie
@@ -106,7 +130,12 @@ http://localhost:8000
 - Zmiana hasla
 - Edytowanie podstawowych informacji 
 
-**Prawdopodobnie** do weryfikacji e-maila trzeba bedzie dorobic odpowiednie kolumny, badz osobna tabele.
+### **Tabela: `Weryfikacja`**
+| Kolumna             | Typ danych         | Opis                                  |
+|---------------------|--------------------|----------------------------------------|
+| `uzytkownik_id`       | INT (FK → Uzytkownicy.id) (PK) | ID uzytkownika |
+| `kod`                 | VARCHAR    | Wygenerowany kod potwierdzający email |
+| `data_wygaśnięcia`    | DATETIME   | Data wygaśnięcia kodu (po której można go usunąć z bazy) |
 
 ---
 
@@ -133,6 +162,7 @@ http://localhost:8000
 - System do wysylania kodów odbioru / informacji uzytkownikom na e-maila/telefon, jeszcze przemyslec czy zrobic to na poziomie 'chrono taska', czy uzyc 'asynchronous task queue'
     - Odbywa się w momencie gdy paczka staje się gotowa do odbioru
 
+---
 
 ### **Tabela: `Aktualizacje`**
 | Kolumna             | Typ danych         | Opis                                      |
@@ -141,6 +171,7 @@ http://localhost:8000
 | `paczki_id`     | INT (FK → Paczki.id) | ID paczki |
 | `wiadomosc`         | ENUM | 'Wyslano', 'Odebrano w magazynie', 'Wydano do doreczenia' |
 | `ostatni_kurier_id`     | INT (FK → uzytkownik.id ) | ostatni kurier który był odpowiedzialny za paczkę (nadpisywany automatycznie gdy 'skanuje przesylke) |
+| `ostatnia_sortownia_id`     | INT (FK → sortownia.id ) | ostatnia sortownia w której znajdowała się paczka |
 | `utworzono` | DATETIME | kiedy miało miejsce wydarzenie |
 
 ---
