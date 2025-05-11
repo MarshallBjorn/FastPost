@@ -22,6 +22,7 @@ Route::get('/admin', [App\Http\Controllers\Admin\AdminController::class, 'index'
 Route::prefix('admin')->group(function () {
     Route::resource('packages', App\Http\Controllers\Admin\PackageController::class);
     Route::resource('postmats', App\Http\Controllers\Admin\PostmatController::class);
+    Route::resource('warehouses', App\Http\Controllers\Admin\WarehouseController::class);
     // Route::resource('actualizations', ActualizationController::class);
 });
 
