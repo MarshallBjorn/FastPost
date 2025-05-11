@@ -14,4 +14,8 @@ class AdminController extends Controller
     public function deliveries() {
         return view('admin.deliveries');
     }
+
+    public function postmats() {
+        return view('admin.postmats');
+    }
 }

@@ -14,7 +14,7 @@ class Postmat extends Model
     protected $fillable = [
         'name',
         'city',
-        'post-code',
+        'post_code',
         'latitude',
         'longitude',
         'status'
