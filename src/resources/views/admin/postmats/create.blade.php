@@ -44,6 +44,43 @@
         </div>
 
         <div>
+            <label>Pick Location</label>
+            <div id="map" style="height: 300px;" class="rounded border mt-2 mb-4"></div>
+        </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // Set default map center and zoom
+                const map = L.map('map').setView([51.505, -0.09], 13); // Example coords
+
+                // Load OpenStreetMap tiles
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+
+                // Marker initialization
+                let marker = null;
+
+                // On map click
+                map.on('click', function (e) {
+                    const { lat, lng } = e.latlng;
+
+                    // Update input fields
+                    document.querySelector('input[name="latitude"]').value = lat.toFixed(6);
+                    document.querySelector('input[name="longitude"]').value = lng.toFixed(6);
+
+                    // Remove existing marker
+                    if (marker) {
+                        map.removeLayer(marker);
+                    }
+
+                    // Add marker to clicked location
+                    marker = L.marker([lat, lng]).addTo(map);
+                });
+            });
+        </script>
+
+        <div>
             <label>Status</label>
             <select name="status" class="form-input" required>
                 <option value="">Select Status</option>

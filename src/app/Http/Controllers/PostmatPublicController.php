@@ -9,12 +9,6 @@ class PostmatPublicController extends Controller
 {
     public function index(Request $request)
     {
-        $postmats = Postmat::all();
-        return view('public.postmats.index', compact('postmats'));
-    }
-
-    public function filter(Request $request)
-    {
         $query = Postmat::query();
 
         if ($request->filled('city')) {
@@ -25,8 +19,18 @@ class PostmatPublicController extends Controller
             $query->where('status', $request->status);
         }
 
-        $query->orderBy($request->get('sort', 'name'), $request->get('direction', 'asc'));
+        if ($request->sort === 'name_asc') {
+            $query->orderBy('name');
+        } elseif ($request->sort === 'name_desc') {
+            $query->orderByDesc('name');
+        } elseif ($request->sort === 'city_asc') {
+            $query->orderBy('city');
+        } elseif ($request->sort === 'city_desc') {
+            $query->orderByDesc('city');
+        }
 
-        return response()->json($query->paginate(10));
+        $postmats = $query->paginate(9);
+
+        return view('public.postmats.index', compact('postmats'));
     }
 }
