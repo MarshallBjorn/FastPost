@@ -3,15 +3,13 @@
 use App\Http\Controllers\PostmatPublicController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
 
 // Temporary login route so 'auth' middleware doesn't crash
 Route::get('/login', function () {
     return 'TODO: Login form goes here';
 })->name('login');
 
+Route::get('/', [App\Http\Controllers\HomeController::class, 'index']);
 
 // Below code will redirect to login if request user is not admin (app.php withMiddleware section would be used)
 // Route::middleware(['auth', 'is_admin'])->group(function () {
