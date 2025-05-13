@@ -21,6 +21,10 @@ Route::get('/admin', [App\Http\Controllers\Admin\AdminController::class, 'index'
 Route::get('/postmats', [PostmatPublicController::class,'index'])->name('public.postmats.index');
 Route::get('/postmats/filter', [PostmatPublicController::class, 'filter'])->name('public.postmats.filter');
 
+Route::get('/client/packages/send_package', [App\Http\Controllers\Client\PackageController::class, 'showForm'])->name('client.send_package');
+Route::post('/client/packages/send_package', [App\Http\Controllers\Client\PackageController::class, 'send_package'])->name('client.send_package.submit');
+
+
 Route::prefix('admin')->group(function () {
     Route::resource('packages', App\Http\Controllers\Admin\PackageController::class);
     Route::resource('postmats', App\Http\Controllers\Admin\PostmatController::class);

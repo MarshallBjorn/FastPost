@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>{{ config('app.name', 'FastPost') }}</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -22,8 +23,10 @@
                 📦 FastPost
             </a>
             <nav class="space-x-4 text-sm font-medium">
+                <a href="{{ url('/admin') }}" class="text-gray-700 hover:text-blue-600 transition">Admin page</a>
                 <a href="{{ route('public.postmats.index') }}" class="text-gray-700 hover:text-blue-600 transition">Browse Postmats</a>
                 <a href="{{ url('/login') }}" class="text-gray-700 hover:text-blue-600 transition">Login</a>
+                <a href="{{ route('client.send_package') }}" class="text-gray-700 hover:text-blue-600 transition">Send a parcel</a>
             </nav>
         </div>
     </header>

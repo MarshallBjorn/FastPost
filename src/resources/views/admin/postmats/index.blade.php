@@ -29,7 +29,6 @@
                     <td class="p-2">{{ $postmat->latitude }}</td>
                     <td class="p-2">{{ $postmat->longitude }}</td>
                     <td class="p-2">{{ ucfirst($postmat->status) }}</td>
-                    <td class="p-2">{{ $package->destinationPostmat->name ?? '-' }}</td>
                     <td class="p-2">
                         <a href="{{ route('postmats.show', $postmat) }}" class="text-blue-500">View</a> |
                         <a href="{{ route('postmats.edit', $postmat) }}" class="text-yellow-500">Edit</a> |

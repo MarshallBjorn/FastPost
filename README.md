@@ -140,9 +140,9 @@ http://localhost:8000
 ---
 
 ### **Tabela: `Paczki`**
-| Kolumna             | Typ danych         | Opis                                  |
+| Kolumna             | Typ danych         | Opis                                   |
 |---------------------|--------------------|----------------------------------------|
-| `id`                | INT (PK)           | Unikalny identyfikator paczki         |
+| `id`                | INT (PK)           | Unikalny identyfikator paczki             |
 | `nadawca_id`        | INT (FK → Uzytkownicy.id) | Nadawca                            |
 | `docelowy_paczkomat_id`| INT (FK → Paczkomat.id) | Docelowy paczkomat paczk          |
 | `email_odbiorcy`    | VARCHAR            | E-mail odbiorcy                           |
@@ -176,14 +176,17 @@ http://localhost:8000
 
 ---
 
-
-Edit `src/.env`:
-
-```ini
-DB_CONNECTION=pgsql
-DB_HOST=db
-DB_PORT=5432
-DB_DATABASE=laravel
-DB_USERNAME=laravel
-DB_PASSWORD=secret
-```
+Logika wysyłania paczki:
+- osoba wysyłająca podaje (musi posiadac konto! - narazie zrobic na sztywno) - potrzebna autoryzacja
+  - (Dzisiaj tak naprawde się generują etykiety z kodami QR wystawiane przez API, pomiedzy systemami np vinted - paczkomaty.)
+  - Formularz posiadajacy:
+    - Paczkomat startowy !!! TODO 
+    - E-mail
+    - Telefon
+    - Paczkomat docelowy
+  - Po walidacji danych:
+    - Odbiorca id - jesli e-mail znaleziono w bazie danych.
+    - automatyczny status
+    - automatyczna data nadania
+    - Stworzenie historii paczki 
+  - Generowanie kodu QR
