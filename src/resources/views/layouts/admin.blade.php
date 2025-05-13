@@ -16,9 +16,10 @@
     <header class="flex justify-between mb-2 border-dotted border-b-2">
         <a href="{{ route('admin.dashboard') }}" class="p-3 text-2xl border-dotted border-r-2">Admin Panel</a>
         <div class="my-auto px-5 flex gap-x-6">
-            <a href="{{ route('packages.index') }}">dowozy</a>
-            <a href="{{ route('postmats.index') }}">Paczkomaty</a>
-            <a href="">konta</a>
+            <a href="{{ route('packages.index') }}">Deliveries</a>
+            <a href="{{ route('postmats.index') }}">Postmats</a>
+            <a href="{{ route('actualizations.index')}}">Actualizations</a>
+            <a href="">Accounts</a>
         </div>        
     </header>
 

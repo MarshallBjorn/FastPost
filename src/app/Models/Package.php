@@ -60,4 +60,10 @@ class Package extends Model
     public function stash() {
         return $this->hasOne(Stash::class);
     }
+
+    public function actualizations()
+    {
+        return $this->hasMany(Actualization::class);
+    }
+
 }
