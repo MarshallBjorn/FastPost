@@ -36,7 +36,16 @@
         </div>
 
         <div>
-            <label>Postmat</label>
+            <label>Initial Postmat</label>
+            <select name="start_postmat_id" class="form-input">
+                @foreach ($postmats as $postmat)
+                    <option value="{{ $postmat->id }}">{{ $postmat->name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div>
+            <label>Destination Postmat</label>
             <select name="destination_postmat_id" class="form-input">
                 @foreach ($postmats as $postmat)
                     <option value="{{ $postmat->id }}">{{ $postmat->name }}</option>

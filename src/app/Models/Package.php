@@ -14,6 +14,7 @@ class Package extends Model
     protected $fillable = [
         'sender_id',
         'receiver_id',
+        'start_postmat_id',
         'destination_postmat_id',
         'receiver_email',
         'receiver_phone',
@@ -44,6 +45,16 @@ class Package extends Model
 
     public function postmat() {
         return $this->belongsTo(Postmat::class);
+    }
+
+    public function destinationPostmat()
+    {
+        return $this->belongsTo(Postmat::class, 'destination_postmat_id');
+    }
+
+    public function startPostmat()
+    {
+        return $this->belongsTo(Postmat::class, 'start_postmat_id');
     }
 
     public function stash() {

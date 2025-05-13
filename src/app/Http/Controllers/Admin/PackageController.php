@@ -29,6 +29,7 @@ class PackageController extends Controller
         $validated = $request->validate([
             'sender_id' => 'nullable|exists:users,id',
             'receiver_id' => 'nullable|exists:users,id',
+            'start_postmat_id' => 'nullable|exists:postmats,id',
             'destination_postmat_id' => 'nullable|exists:postmats,id',
             'receiver_email' => 'required|email',
             'receiver_phone' => 'required|string',
