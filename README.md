@@ -180,13 +180,16 @@ Logika wysyłania paczki:
 - osoba wysyłająca podaje (musi posiadac konto! - narazie zrobic na sztywno) - potrzebna autoryzacja
   - (Dzisiaj tak naprawde się generują etykiety z kodami QR wystawiane przez API, pomiedzy systemami np vinted - paczkomaty.)
   - Formularz posiadajacy:
-    - Paczkomat startowy !!! TODO 
+    - Paczkomat startowy
     - E-mail
     - Telefon
     - Paczkomat docelowy
+    - TODO jesli rozwijany bedzie rozwijany ten system.
+      - E-mail uytkownika (jesli nie ma go request)
+      - Telefon uzytkownika (jesli nie ma go w request)
   - Po walidacji danych:
     - Odbiorca id - jesli e-mail znaleziono w bazie danych.
     - automatyczny status
     - automatyczna data nadania
     - Stworzenie historii paczki 
-  - Generowanie kodu QR
+  - Generowanie kodu QR do route z historia paczki
