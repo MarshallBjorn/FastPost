@@ -33,6 +33,22 @@ Route::prefix('admin')->group(function () {
     Route::resource('actualizations', App\Http\Controllers\Admin\ActualizationController::class);
 });
 
+Route::get('/test404', function() {
+    abort(404);
+});
+
+Route::get('/test403', function() {
+    abort(403);
+});
+
+Route::get('/test500', function() {
+    abort(500);
+});
+
+Route::get('/test429', function() {
+    abort(429);
+});
+
 // When middleware of admin is created then don't forgot to make all admin routes go through admin middleware
 // Route::prefix('admin')->middleware(['auth', 'is_admin'])->group(function () {
 //     Route::resource('packages', App\Http\Controllers\Admin\PackageController::class);
