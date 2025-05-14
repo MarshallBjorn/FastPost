@@ -4,7 +4,7 @@
 <div class="max-w-3xl mx-auto p-4">
     <h2 class="text-xl font-bold mb-4">Edit Package</h2>
 
-    <form method="POST" action="{{ route('packages.update', $package) }}">
+    <form method="POST" action="{{ route('packages.update', $package) }}" class="space-y-4">
         @csrf
         @method('PUT')
 
@@ -21,6 +21,14 @@
             <option value="">-- Select receiver --</option>
             @foreach ($users as $user)
                 <option value="{{ $user->id }}" @selected($package->receiver_id == $user->id)>{{ $user->id }}</option>
+            @endforeach
+        </select>
+
+        <label class="">Initial Postmat</label>
+        <select name="start_postmat_id" class="form-input">
+            <option value="">-- Select postmat --</option>
+            @foreach ($postmats as $postmat)
+                <option value="{{ $postmat->id }}" @selected($package->start_postmat_id == $postmat->id)>{{ $postmat->name }}</option>
             @endforeach
         </select>
 

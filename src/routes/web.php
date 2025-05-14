@@ -29,7 +29,7 @@ Route::prefix('admin')->group(function () {
     Route::resource('packages', App\Http\Controllers\Admin\PackageController::class);
     Route::resource('postmats', App\Http\Controllers\Admin\PostmatController::class);
     Route::resource('warehouses', App\Http\Controllers\Admin\WarehouseController::class);
-    // Route::resource('actualizations', ActualizationController::class);
+    Route::resource('actualizations', App\Http\Controllers\Admin\ActualizationController::class);
 });
 
 // When middleware of admin is created then don't forgot to make all admin routes go through admin middleware
