@@ -50,7 +50,7 @@ class PostmatController extends Controller
      */
     public function show(Postmat $postmat)
     {
-        return view('admin.postmats.show', compact('postmat'));
+        return redirect()->route('stashes.index', $postmat);
     }
 
     /**
