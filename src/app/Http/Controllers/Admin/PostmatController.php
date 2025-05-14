@@ -14,7 +14,7 @@ class PostmatController extends Controller
      */
     public function index()
     {
-        $postmats = Postmat::paginate(10);
+        $postmats = Postmat::with(["stashes.package"])->paginate(10);
         return view('admin.postmats.index', compact('postmats'));
     }
 

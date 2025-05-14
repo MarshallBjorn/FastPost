@@ -23,6 +23,7 @@ Route::get('/postmats/filter', [PostmatPublicController::class, 'filter'])->name
 
 Route::get('/client/packages/send_package', [App\Http\Controllers\Client\PackageController::class, 'showForm'])->name('client.send_package');
 Route::post('/client/packages/send_package', [App\Http\Controllers\Client\PackageController::class, 'send_package'])->name('client.send_package.submit');
+Route::get('/track', [App\Http\Controllers\Client\PackageController::class, 'track'])->name('package.lookup');
 
 
 Route::prefix('admin')->group(function () {

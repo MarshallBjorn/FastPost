@@ -7,8 +7,6 @@ use App\Models\User;
 use App\Models\Postmat;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Auth\Events\Validated;
-// use Illuminate\Support\Facades\Auth;
 use App\Models\Actualization;
 use Endroid\QrCode\QrCode;
 
@@ -96,5 +94,71 @@ class PackageController extends Controller
             'package' => $package,
             'qrCode' => $qrCodeBase64
         ]);
+    }
+
+    public function track(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|integer',
+        ]);
+
+        $package = Package::with('actualizations', 'destinationPostmat')->find($request->code);
+
+        if (!$package) {
+            return view('public.client.packages.package_track', [
+                'error' => 'Package not found.',
+                'not_exist' => true,
+                'actualizations' => collect(),
+                'postmat' => null,
+                'maskedEmail' => null,
+                'maskedPhone' => null,
+            ]);
+        }
+
+        // Fallback dummy if no actualizations yet
+        $actualizations = $package->actualizations;
+        $postmat = $package->destinationPostmat;
+
+        if ($actualizations->isEmpty()) {
+            $actualizations = collect([
+                (object)[
+                    'message' => 'sent',
+                    'created_at' => now()->subMinutes(15),
+                ]
+            ]);
+        }
+
+        $maskedEmail = $this->maskEmail($package->receiver_email);
+        $maskedPhone = $this->maskPhone($package->receiver_phone);
+
+        return view('public.client.packages.package_track',[
+            'actualizations' => $actualizations,
+            'postmat' => $postmat,
+            'not_exist' => false,
+            'maskedEmail' => $maskedEmail,
+            'maskedPhone' => $maskedPhone,
+        ]);
+    }
+
+    private function maskEmail(string $email): string
+    {
+        $parts = explode('@', $email);
+        $name = $parts[0];
+        $domain = $parts[1] ?? '';
+
+        $maskedName = substr($name, 0, 1) . str_repeat('*', max(0, strlen($name) - 1));
+        
+        $domainParts = explode('.', $domain);
+        $domainName = $domainParts[0] ?? '';
+        $tld = $domainParts[1] ?? 'com';
+
+        $maskedDomain = substr($domainName, 0, 1) . str_repeat('*', max(0, strlen($domainName) - 1));
+
+        return "{$maskedName}@{$maskedDomain}.{$tld}";
+    }
+
+    private function maskPhone(string $phone): string
+    {
+        return substr($phone, 0, 2) . str_repeat('*', max(0, strlen($phone) - 4)) . substr($phone, -2);
     }
 }

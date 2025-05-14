@@ -63,7 +63,6 @@ class Package extends Model
 
     public function actualizations()
     {
-        return $this->hasMany(Actualization::class);
+        return $this->hasMany(Actualization::class)->orderBy('created_at', 'asc');
     }
-
 }
