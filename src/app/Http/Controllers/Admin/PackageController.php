@@ -8,6 +8,7 @@ use App\Models\Postmat;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\Validated;
+use App\Models\Actualization;
 
 class PackageController extends Controller
 {
@@ -65,12 +66,22 @@ class PackageController extends Controller
             $validated['destination_postmat_id'] = $postmat->id;
         }
 
-        Package::create($validated);
+        $package = Package::create($validated);
+
+        Actualization::create([
+            'package_id' => $package->id,
+            // message = ['sent', 'in_warehouse', 'in_delivery']
+            'message' => 'sent',
+            'created_at' => now(),
+        ]);
+
         return redirect()->route('packages.index')->with('success', 'Package created.');
     }
 
     public function show(Package $package)
     {
+        $package->load('actualizations');
+        
         return view('admin.packages.show', compact('package'));
     }
 
@@ -84,9 +95,13 @@ class PackageController extends Controller
     public function update(Request $request, Package $package)
     {
         $data = $request->validate([
+            'sender_id' => 'nullable|exists:users,id',
+            'receiver_id' => 'nullable|exists:users,id',
+            'start_postmat_id' => 'nullable|exists:postmats,id',
+            'destination_postmat_id' => 'nullable|exists:postmats,id',
             'receiver_email' => 'required|email',
             'receiver_phone' => 'required|string',
-            'status' => 'required|string',
+            'status' => 'required|string|in:registered,in_transit,in_postmat,collected',
         ]);
 
         $package->update($data);
