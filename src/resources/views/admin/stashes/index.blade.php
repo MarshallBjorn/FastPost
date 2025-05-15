@@ -31,7 +31,7 @@
     
     <div class="flex justify-between items-center mb-4">
         <h1 class="text-2xl font-bold mb-4">Stashes</h1>
-        <a href="" class="form-submit px-4 py-2">+ Create Stashes</a>
+        <a href="{{ route('stashes.create', $postmat) }}" class="form-submit px-4 py-2">+ Create Stashes</a>
     </div>
 
     <div class="overflow-x-auto custom-white-shadow">
@@ -50,6 +50,12 @@
                     <td class="p-2">{{ $stash->size }}</td>
                     @if (is_null($stash->package_id))
                         <td class="p-2">Empty</td>
+                    @else
+                        <td class="p-2">
+                            <a href="{{ route('admin.package.show', $stash->package) }}">
+                                $stash->package->package_id
+                            </a>
+                        </td>
                     @endif
                 </tr>
                 @endforeach

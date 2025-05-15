@@ -21,7 +21,7 @@ class Stash extends Model
         return $this->belongsTo(Postmat::class);
     }
 
-    // public function stash() {
-    //     return $this->belongsTo();
-    // }
+    public function package() {
+        return $this->belongsTo(Package::class, 'package_id');
+    }
 }

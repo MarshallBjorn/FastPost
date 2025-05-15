@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Stash;
 use App\Models\Postmat;
+use App\Models\Package;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
@@ -15,7 +16,7 @@ class StashController extends Controller
     public function index(Postmat $postmat)
     {
         // Assuming `stashes()` is a relationship on Postmat model
-        $stashes = $postmat->stashes()->with('packages')->get();
+        $stashes = $postmat->stashes()->with('package')->get();
         
 
         return view('admin.stashes.index', compact('postmat', 'stashes'));
@@ -24,18 +25,29 @@ class StashController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Postmat $postmat)
     {
-        //
+        return view('admin.stashes.create', compact('postmat'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, Postmat $postmat)
     {
-        //
+        $validated = $request->validate([
+            'size' => 'required|in:S,M,L',
+        ]);
+
+        $validated['postmat_id'] = $postmat->id;
+
+        Stash::create($validated);
+
+        return redirect()
+            ->route('stashes.index', $postmat)
+            ->with('success', 'Package successfully added to stash.');
     }
+
 
     /**
      * Display the specified resource.
