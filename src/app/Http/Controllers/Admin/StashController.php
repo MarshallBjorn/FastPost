@@ -62,8 +62,10 @@ class StashController extends Controller
      */
     public function edit(Stash $stash)
     {
-        //
+        $postmats = Postmat::all(); // Fetch all postmats for the dropdown
+        return view('stashes.edit', compact('stash', 'postmats'));
     }
+    
 
     /**
      * Update the specified resource in storage.

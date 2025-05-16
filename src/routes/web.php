@@ -34,6 +34,7 @@ Route::prefix('admin')->group(function () {
     Route::resource('stashes', App\Http\Controllers\Admin\StashController::class);
     Route::get('postmats/{postmat}/stashes', [App\Http\Controllers\Admin\StashController::class, 'index'])->name('stashes.index');
     Route::get('postmats/{postmat}/stashes/create', [App\Http\Controllers\Admin\StashController::class, 'create'])->name('stashes.create');
+    Route::get('postmats/stashes/edit/{stash}', [App\Http\Controllers\Admin\StashController::class, 'edit'])->name('stashes.edit');
     Route::post('postmats/{postmat}/stashes', [App\Http\Controllers\Admin\StashController::class, 'store'])->name('stashes.store');
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
 });
