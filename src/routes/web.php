@@ -35,6 +35,23 @@ Route::prefix('admin')->group(function () {
     Route::get('postmats/{postmat}/stashes', [App\Http\Controllers\Admin\StashController::class, 'index'])->name('stashes.index');
     Route::get('postmats/{postmat}/stashes/create', [App\Http\Controllers\Admin\StashController::class, 'create'])->name('stashes.create');
     Route::post('postmats/{postmat}/stashes', [App\Http\Controllers\Admin\StashController::class, 'store'])->name('stashes.store');
+    Route::resource('users', App\Http\Controllers\Admin\UserController::class);
+});
+
+Route::get('/test404', function() {
+    abort(404);
+});
+
+Route::get('/test403', function() {
+    abort(403);
+});
+
+Route::get('/test500', function() {
+    abort(500);
+});
+
+Route::get('/test429', function() {
+    abort(429);
 });
 
 // When middleware of admin is created then don't forgot to make all admin routes go through admin middleware

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>FastPost Admin Panel</title>    
+    <title>FastPost Admin Panel</title>
     {{-- WARN: NOT FOR PRODUCTION USE --}}
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     {{-- ***** --}}
@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body style="font-family: 'Courier Prime', monospace;">
     <header class="flex justify-between mb-2 border-dotted border-b-2">
@@ -20,8 +21,8 @@
             <a href="{{ route('packages.index') }}">Deliveries</a>
             <a href="{{ route('postmats.index') }}">Postmats</a>
             <a href="{{ route('actualizations.index')}}">Actualizations</a>
-            <a href="">Accounts</a>
-        </div>        
+            <a href="{{ route('users.index')}}">Accounts</a>
+        </div>
     </header>
 
     <main class="w-11/12 mx-auto">

@@ -54,6 +54,21 @@
         </div>
 
         <div>
+            <label for="size">Size</label>
+            <select name="size" id="size" class="form-input" required>
+                <option value="">Select Size</option>
+                <option value="S">S</option>
+                <option value="M">M</option>
+                <option value="L">L</option>
+            </select>
+        </div>
+
+        <div>
+            <label>Package size in grams</label>
+            <input type="number" name="weight" placeholder="Weight in grams" class="form-input" required>
+        </div>
+
+        <div>
             <label>Receiver phone</label>
             <input type="text" name="receiver_phone" placeholder="Receiver Phone" class="form-input" required>
         </div>

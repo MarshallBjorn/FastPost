@@ -20,6 +20,8 @@
                     <th class="py-2 px-4">Receiver_email</th>
                     <th class="py-2 px-4">Receiver_phone</th>
                     <th class="py-2 px-4">Sent at</th>
+                    <th class="py-2 px-4">Weight</th>
+                    <th class="py-2 px-4">Size</th>
                     <th class="py-2 px-4">Delivered date</th>
                     <th class="py-2 px-4">Collected date</th>
                     <th class="py-2 px-4">Actions</th>
@@ -37,6 +39,8 @@
                     <td class="py-2 px-4">{{ $package->receiver_email }}</td>
                     <td class="py-2 px-4">{{ $package->receiver_phone }}</td>
                     <td class="py-2 px-4">{{ $package->sent_at ?? '-' }}</td>
+                    <td class="py-2 px-4">{{ $package->weight ?? '-' }}</td>
+                    <td class="py-2 px-4">{{ $package->size ?? '-' }}</td>
                     <td class="py-2 px-4">{{ $package->delivered_at ? $package->delivered_at : '-' }}</td>
                     <td class="py-2 px-4">{{ $package->collected_at ? $package->collected_at : '-' }}</td>
                     <td class="py-2 px-4">

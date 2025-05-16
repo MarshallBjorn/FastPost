@@ -21,7 +21,9 @@ class Package extends Model
         'status',
         'sent_at',
         'delivered_date',
-        'collected_date'
+        'collected_date',
+        'size',
+        'weight',
     ];
 
     protected static function boot()

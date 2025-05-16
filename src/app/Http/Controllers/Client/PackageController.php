@@ -26,6 +26,8 @@ class PackageController extends Controller
             'phone' => 'required',
             'destination_postmat' => 'required',
             'start_postmat' => 'required',
+            'size' => 'required|in:S,M,L',
+            'weight' => 'required|integer|min:1',
         ]);
 
         $receiver = User::where('email', $request->email)->first();
@@ -70,6 +72,8 @@ class PackageController extends Controller
         $package->start_postmat_id = $start_postmat->id;
         // ['registered', 'in_transit', 'in_postmat', 'collected']
         $package->status = 'registered';
+        $package->weight = $request->weight;
+        $package->size = $request->size;
         $package->sent_at = now();
         $package->save();
 
