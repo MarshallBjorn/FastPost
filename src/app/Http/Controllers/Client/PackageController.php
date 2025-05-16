@@ -39,7 +39,6 @@ class PackageController extends Controller
                 'first_name' => 'Unknown',
                 'last_name' => 'User',
                 'phone' => $request->phone,
-                'user_type' => 'normal',
                 'password' => bcrypt('passwordpassword'), // or random string
             ]);
 

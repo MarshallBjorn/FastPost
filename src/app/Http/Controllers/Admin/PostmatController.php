@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\Package;
 use App\Models\Postmat;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -86,5 +87,10 @@ class PostmatController extends Controller
     {
         $postmat->delete();
         return redirect()->route('postmats.index')->with('success', 'Postmat deleted.');
+    }
+
+    public function showPackage(Package $package)
+    {
+        
     }
 }

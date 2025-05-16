@@ -34,6 +34,9 @@
         <a href="{{ route('stashes.create', $postmat) }}" class="form-submit px-4 py-2">+ Create Stashes</a>
     </div>
 
+    @if ($stashes->isEmpty())
+        <p>No stashes found.</p>
+    @else
     <div class="overflow-x-auto custom-white-shadow">
         <table class="min-w-full bg-white border-2 border-dotted">
             <thead class="bg-gray-100 text-left text-sm border-2 border-dotted">
@@ -48,12 +51,12 @@
                 <tr class="border-t text-center">
                     <td class="p-2">{{ $stash->id }}</td>
                     <td class="p-2">{{ $stash->size }}</td>
-                    @if (is_null($stash->package_id))
+                    @if (is_null($stash->package))
                         <td class="p-2">Empty</td>
                     @else
                         <td class="p-2">
-                            <a href="{{ route('admin.package.show', $stash->package) }}">
-                                $stash->package->package_id
+                            <a href="{{ route('packages.show', $stash->package) }}">
+                                {{ $stash->package->id }}
                             </a>
                         </td>
                     @endif
@@ -61,15 +64,7 @@
                 @endforeach
             </tbody>
         </table>
-    
-
-    @if ($stashes->isEmpty())
-        <p>No stashes found.</p>
-    @else
-        <ul>
-            @foreach ($stashes as $stash)
-                <li>{{ $stash->id }} — {{ $stash->created_at }}</li>
-            @endforeach
-        </ul>
+    </div>
     @endif
+</div>
 @endsection

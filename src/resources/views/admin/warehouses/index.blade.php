@@ -7,6 +7,8 @@
         <a href="{{ route('warehouses.create') }}" class="form-submit px-4 py-2">+ Create Warehouse</a>
     </div>
 
+    <div id="warehouse-map" class="w-full h-150 mb-6 rounded-lg border-2 border-dotted"></div>
+
     <div class="overflow-x-auto custom-white-shadow">
         <table class="min-w-full bg-white border-2 border-dotted">
             <thead class="bg-gray-100 text-left text-sm border-2 border-dotted">
@@ -40,5 +42,41 @@
             </tbody>
         </table>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const map = L.map('warehouse-map').setView([52.0, 19.0], 6); // Center on Poland
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            const warehouses = @json($warehouses);
+            const postmats = @json($postmats);
+
+            warehouses.forEach(warehouse => {
+                const marker = L.circleMarker([warehouse.latitude, warehouse.longitude], {
+                    radius: 6,
+                    color: 'blue',
+                    fillColor: 'blue',
+                    fillOpacity: 0.8,
+                }).addTo(map).bindPopup(`<b>${warehouse.city} ${warehouse.id}</b>`);
+
+                // Draw connections
+                (warehouse.connections_from || []).forEach(conn => {
+                    const to = conn.to_warehouse;
+                    if (to) {
+                        L.polyline([
+                            [warehouse.latitude, warehouse.longitude],
+                            [to.latitude, to.longitude]
+                        ], {
+                            color: 'green',
+                            weight: 2,
+                            opacity: 0.7,
+                        }).addTo(map);
+                    }
+                });
+            });
+        });
+    </script>
 </div>
 @endsection

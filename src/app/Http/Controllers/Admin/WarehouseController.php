@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Warehouse;
+use App\Models\Postmat;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -13,8 +14,9 @@ class WarehouseController extends Controller
      */
     public function index()
     {
-        $warehouses = Warehouse::all();
-        return view('admin.warehouses.index', compact('warehouses'));
+        $warehouses = Warehouse::with('connectionsFrom.toWarehouse')->get();
+        $postmats = Postmat::all();
+        return view('admin.warehouses.index', compact('warehouses', 'postmats'));
     }
 
     /**

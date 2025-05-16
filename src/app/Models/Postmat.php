@@ -17,10 +17,15 @@ class Postmat extends Model
         'post_code',
         'latitude',
         'longitude',
-        'status'
+        'status',
+        'warehouse_id'
     ];
 
     public function stashes(){
         return $this->hasMany(Stash::class);
+    }
+
+    public function warehouse() {
+        return $this->belongsTo(Warehouse::class, 'warehouse_id');
     }
 }

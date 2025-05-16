@@ -37,8 +37,8 @@
                     <td class="py-2 px-4">{{ $package->receiver_email }}</td>
                     <td class="py-2 px-4">{{ $package->receiver_phone }}</td>
                     <td class="py-2 px-4">{{ $package->sent_at ?? '-' }}</td>
-                    <td class="py-2 px-4">{{ $package->delivered_at ? $package->delivered_at->format('Y-m-d H:i') : '-' }}</td>
-                    <td class="py-2 px-4">{{ $package->collected_at ? $package->collected_at->format('Y-m-d H:i') : '-' }}</td>
+                    <td class="py-2 px-4">{{ $package->delivered_at ? $package->delivered_at : '-' }}</td>
+                    <td class="py-2 px-4">{{ $package->collected_at ? $package->collected_at : '-' }}</td>
                     <td class="py-2 px-4">
                         <a href="{{ route('packages.show', $package) }}" class="text-blue-500">View</a> |
                         <a href="{{ route('packages.edit', $package) }}" class="text-yellow-500">Edit</a> |
