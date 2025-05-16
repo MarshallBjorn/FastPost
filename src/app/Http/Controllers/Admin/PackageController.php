@@ -50,7 +50,6 @@ class PackageController extends Controller
                 'first_name' => 'GenName',
                 'last_name' => 'GenLastName',
                 'phone' => $validated['receiver_phone'],
-                'user_type' => 'normal',
                 'name' => 'Generated Sender',
                 'email' => 'sender_' . uniqid() . '@example.com',
                 'password' => bcrypt('secret'), // dummy password

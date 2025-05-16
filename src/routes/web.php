@@ -31,6 +31,10 @@ Route::prefix('admin')->group(function () {
     Route::resource('postmats', App\Http\Controllers\Admin\PostmatController::class);
     Route::resource('warehouses', App\Http\Controllers\Admin\WarehouseController::class);
     Route::resource('actualizations', App\Http\Controllers\Admin\ActualizationController::class);
+    Route::resource('stashes', App\Http\Controllers\Admin\StashController::class);
+    Route::get('postmats/{postmat}/stashes', [App\Http\Controllers\Admin\StashController::class, 'index'])->name('stashes.index');
+    Route::get('postmats/{postmat}/stashes/create', [App\Http\Controllers\Admin\StashController::class, 'create'])->name('stashes.create');
+    Route::post('postmats/{postmat}/stashes', [App\Http\Controllers\Admin\StashController::class, 'store'])->name('stashes.store');
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
 });
 

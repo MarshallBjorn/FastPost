@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
 class Warehouse extends Model
 {
     use HasFactory;
@@ -23,6 +24,10 @@ class Warehouse extends Model
         return $this->hasMany(Stash::class);
     }
 
+    public function postmats() {
+        return $this->hasMany(Postmat::class);
+    }
+
     public function staff() {
         return $this->hasMany(Staff::class);
     }
@@ -30,5 +35,15 @@ class Warehouse extends Model
     public function actualization()
     {
         return $this->hasMany(Actualization::class);
+    }
+
+    public function connectionsFrom()
+    {
+        return $this->hasMany(WarehouseConnection::class, 'from_warehouse_id');
+    }
+
+    public function connectionsTo()
+    {
+        return $this->hasMany(WarehouseConnection::class, 'to_warehouse_id');
     }
 }

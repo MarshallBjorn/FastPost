@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 
 class Stash extends Model
 {
-    use HasFactory;
+    /** @use HasFactory<\Database\Factories\StashFactory> */
+    use HasFactory, Notifiable;
 
     protected $table = 'stashes';
 
@@ -21,7 +23,7 @@ class Stash extends Model
         return $this->belongsTo(Postmat::class);
     }
 
-    // public function stash() {
-    //     return $this->belongsTo();
-    // }
+    public function package() {
+        return $this->belongsTo(Package::class, 'package_id');
+    }
 }

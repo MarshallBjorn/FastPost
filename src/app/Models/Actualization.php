@@ -25,7 +25,7 @@ class Actualization extends Model
     }
 
     public function courier() {
-        return $this->belongsTo(User::class, 'last_courier_id');
+        return $this->belongsTo(Staff::class, 'last_courier_id');
     }
 
     public function lastWareHouse()
