@@ -35,8 +35,13 @@ class PackageController extends Controller
             'receiver_email' => 'required|email',
             'receiver_phone' => 'required|string',
             'status' => 'required|string|in:registered,in_transit,in_postmat,collected',
+            'size' => 'required|in:S,M,L',
+            'weight' => 'required|integer|min:1',
         ], [
             'status.in' => 'The status must be one of the following: registered, in_transit, in_postmat, collected.',
+            'weight.integer' => 'Weight must be an integer in grams.',
+            'weight.min' => 'Weight must be at least 1 gram.',
+            'size.in' => 'The package size must be one of the following: S, M, L',
         ]);
 
         // Handle sender creation if not exists

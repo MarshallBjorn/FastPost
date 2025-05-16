@@ -33,6 +33,21 @@
         </div>
 
         <div class="mb-4">
+            <label for="weight" class="block text-sm font-medium">Weight in grams</label>
+            <input type="number" name="weight" id="weight" class="form-select w-full rounded-md border border-gray-300 shadow-sm px-3 py-2" required>
+        </div>
+
+        <div class="mb-4">
+            <label for="size" class="block text-sm font-medium">Weight in grams</label>
+            <select name="size" id="size" class="form-select w-full rounded-md border border-gray-300 shadow-sm px-3 py-2" required>
+                <option value="">Select Size</option>
+                <option value="S">S</option>
+                <option value="M">M</option>
+                <option value="L">L</option>
+            </select>
+        </div>
+
+        <div class="mb-4">
             <label for="start_postmat" class="block text-sm font-medium">Start Postmat (Sender)</label>
             <input type="text" name="start_postmat" id="start_postmat" class="form-select w-full rounded-md border border-gray-300 shadow-sm px-3 py-2" required>
         </div>

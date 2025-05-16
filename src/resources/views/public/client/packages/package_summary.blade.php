@@ -50,6 +50,14 @@
                         <p class="text-gray-600">{{ $package->destinationPostmat->name ?? 'N/A' }}</p>
                     </div>
                     <div>
+                        <p class="font-medium">Size</p>
+                        <p class="text-gray-600">{{ $package->size ?? 'N/A' }}</p>
+                    </div>
+                    <div>
+                        <p class="font-medium">Weight</p>
+                        <p class="text-gray-600">{{ $package->weight ?? 'N/A' }}</p>
+                    </div>
+                    <div>
                         <p class="font-medium">Sent At</p>
                         <p class="text-gray-600">{{ $package->sent_at->format('Y-m-d H:i') }}</p>
                     </div>
