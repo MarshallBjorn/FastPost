@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>FastPost Admin Panel</title>    
+    <title>FastPost Admin Panel</title>
     {{-- WARN: NOT FOR PRODUCTION USE --}}
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     {{-- ***** --}}
@@ -20,8 +20,8 @@
             <a href="{{ route('packages.index') }}">Deliveries</a>
             <a href="{{ route('postmats.index') }}">Postmats</a>
             <a href="{{ route('actualizations.index')}}">Actualizations</a>
-            <a href="">Accounts</a>
-        </div>        
+            <a href="{{ route('users.index')}}">Accounts</a>
+        </div>
     </header>
 
     <main class="w-11/12 mx-auto">

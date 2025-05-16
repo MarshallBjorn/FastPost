@@ -31,6 +31,7 @@ Route::prefix('admin')->group(function () {
     Route::resource('postmats', App\Http\Controllers\Admin\PostmatController::class);
     Route::resource('warehouses', App\Http\Controllers\Admin\WarehouseController::class);
     Route::resource('actualizations', App\Http\Controllers\Admin\ActualizationController::class);
+    Route::resource('users', App\Http\Controllers\Admin\UserController::class);
 });
 
 Route::get('/test404', function() {

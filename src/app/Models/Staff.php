@@ -18,6 +18,11 @@ class Staff extends Model
         "termination_date",
     ];
 
+    protected $casts = [
+        'hire_date' => 'datetime',
+        'termination_date' => 'datetime',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class, "user_id");
