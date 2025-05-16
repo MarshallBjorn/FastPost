@@ -11,7 +11,13 @@
         <p><strong>Email:</strong> {{ $user->email }}</p>
         <p><strong>Phone:</strong> {{ $user->phone ?? '-' }}</p>
         <p><strong>Email Verified At:</strong> {{ $user->email_verified_at ?? 'Not verified' }}</p>
-        <p><strong>Staff Role:</strong> {{ $user->staff?->staff_type ?? '-' }}</p>
+
+        @if ($user->staff)
+            <hr>
+            <p><strong>Staff Role:</strong> {{ $user->staff->staff_type }}</p>
+            <p><strong>Hire Date:</strong> {{ $user->staff->hire_date }}</p>
+            <p><strong>Warehouse:</strong> {{ $user->staff->warehouse->city ?? '-' }}</p>
+        @endif
     </div>
 
     <div class="mt-4">

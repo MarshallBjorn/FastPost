@@ -31,6 +31,11 @@ class UserRequest extends FormRequest
                 'max:20',
                 'regex:/^\+?[0-9\s\-\(\)]{7,20}$/',
             ],
+
+            // Staff stuff
+            'staff_type' => ['nullable', 'in:admin,courier,warehouse', 'required_with:hire_date'],
+            'hire_date' => ['nullable', 'date', 'required_with:staff_type'],
+            'termination_date' => ['nullable', 'date', 'after_or_equal:hire_date'],
         ];
 
         if ($this->isMethod('post')) {

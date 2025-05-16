@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRequest;
 use App\Models\User;
+use App\Models\Warehouse;
 
 class UserController extends Controller
 {
@@ -16,7 +17,8 @@ class UserController extends Controller
 
     public function create()
     {
-        return view('admin.users.create');
+        $warehouses = Warehouse::all();
+        return view('admin.users.create', compact('warehouses'));
     }
 
     public function store(UserRequest $request)
@@ -24,7 +26,15 @@ class UserController extends Controller
         $user = $request->validated();
         $user['password'] = bcrypt($user['password']);
 
-        User::create($user);
+        $user = User::create($user);
+
+        $staffData = $request->input('staff');
+
+        if (!empty($staffData) && $staffData['staff_type'] != null) {
+            $staffData['user_id'] = $user->id;
+            $user->staff()->create($staffData);
+        }
+
         return redirect()->route('users.index')->with('success', 'User created.');
     }
 
@@ -35,7 +45,8 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        return view('admin.users.edit', compact('user'));
+        $warehouses = Warehouse::all();
+        return view('admin.users.edit', compact('user', 'warehouses'));
     }
 
     public function update(UserRequest $request, User $user)
@@ -49,6 +60,19 @@ class UserController extends Controller
         }
 
         $user->update($data);
+
+        // Handle staff create/update
+        $staffData = $request->input('staff');
+
+        if (!empty($staffData) && is_array($staffData)) {
+            $staffData['user_id'] = $user->id;
+
+            if ($user->staff) {
+                $user->staff->update($staffData);
+            } else {
+                $user->staff()->create($staffData);
+            }
+        }
 
         return redirect()->route('users.index')->with('success', 'User updated!');
     }

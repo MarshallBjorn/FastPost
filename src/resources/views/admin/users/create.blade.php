@@ -48,6 +48,37 @@
             <input type="password" name="password_confirmation" class="form-input" required>
         </div>
 
+        <hr class="my-6">
+
+        <div>
+            <label>Staff Type</label>
+            <select name="staff[staff_type]" class="form-input">
+                <option value="">-- None --</option>
+                @foreach(['admin', 'courier', 'warehouse'] as $type)
+                    <option value="{{ $type }}" {{ old('staff.staff_type') === $type ? 'selected' : '' }}>
+                        {{ ucfirst($type) }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div>
+            <label>Hire Date</label>
+            <input type="datetime-local" name="staff[hire_date]" class="form-input" value="{{ old('staff.hire_date') }}">
+        </div>
+
+        <label for="warehouse">Warehouse</label>
+        <select name="staff[warehouse_id]" id="warehouse" class="form-input">
+            <option value="">Select Warehouse</option>
+            @foreach ($warehouses as $warehouse)
+                <option value="{{ $warehouse->id }}"
+                    {{ old('staff.warehouse_id') == $warehouse->id ? 'selected' : '' }}>
+                    {{ $warehouse->city }}
+                </option>
+            @endforeach
+        </select>
+
+
         <div class="flex items-center justify-between mt-4">
             <button class="form-submit">Create</button>
             <a href="{{ route('users.index') }}" class="form-submit">Cancel</a>
