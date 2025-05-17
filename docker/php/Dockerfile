@@ -38,7 +38,7 @@ WORKDIR /var/www/html
 COPY src /var/www/html
 
 # Install Laravel dependencies
-RUN composer install --no-interaction --optimize-autoloader --no-dev
+RUN composer install --no-interaction --optimize-autoloader
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
