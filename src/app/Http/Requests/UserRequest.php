@@ -33,8 +33,10 @@ class UserRequest extends FormRequest
             ],
 
             // Staff stuff
-            'staff_type' => ['nullable', 'in:admin,courier,warehouse', 'required_with:hire_date'],
+            'staff_type' => ['nullable', 'in:admin,courier,warehouse', 'required_with:hire_date,warehouse_id'],
             'hire_date' => ['nullable', 'date', 'required_with:staff_type'],
+            'warehouse_id' => ['nullable', 'exists:warehouses,id'],
+            // Unused
             'termination_date' => ['nullable', 'date', 'after_or_equal:hire_date'],
         ];
 
@@ -47,5 +49,21 @@ class UserRequest extends FormRequest
         }
 
         return $rules;
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $staff = $this->input('staff', []);
+
+            if (!empty($staff['warehouse_id'])) {
+                if (empty($staff['staff_type'])) {
+                    $validator->errors()->add('staff_type', 'Staff type is required if warehouse is set.');
+                }
+                if (empty($staff['hire_date'])) {
+                    $validator->errors()->add('hire_date', 'Hire date is required if warehouse is set.');
+                }
+            }
+        });
     }
 }

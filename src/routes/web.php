@@ -1,13 +1,18 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PostmatPublicController;
 use Illuminate\Support\Facades\Route;
 
 
-// Temporary login route so 'auth' middleware doesn't crash
-Route::get('/login', function () {
-    return 'TODO: Login form goes here';
-})->name('login');
+Route::middleware('guest')->group(function () {
+    Route::view('/auth', 'public.auth')->name('auth');
+
+    Route::post('/login', [AuthController::class, 'login'])->name('login');
+    Route::post('/register', [AuthController::class, 'register'])->name('register');
+});
+
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
 Route::get('/', [App\Http\Controllers\HomeController::class, 'index']);
 
