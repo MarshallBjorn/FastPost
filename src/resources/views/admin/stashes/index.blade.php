@@ -71,8 +71,13 @@
                                 <td class="p-2">{{ $stash->is_package_in ? 'Yes' : 'No' }}</td>
                                 <td class="p-2 text-amber-400">
                                     <a href="{{ route('stashes.edit', ['stash' => $stash->id]) }}">Edit</a>
-                                </td>
+                                    <form action="{{ route('stashes.destroy', ['stash' => $stash, 'postmat' => $postmat]) }}" method="POST" class="inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-500" onclick="return confirm('Delete?')">Delete</button>
+                                    </form>
 
+                                </td>
                             </tr>
                         @endforeach
                     </tbody>

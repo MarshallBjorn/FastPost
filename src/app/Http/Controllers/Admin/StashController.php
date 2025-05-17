@@ -78,8 +78,10 @@ class StashController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Stash $stash)
+    public function destroy(Postmat $postmat, Stash $stash)
     {
-        //
+        $stash->delete();
+        return redirect()
+            ->route('stashes.index', $postmat)->with('success', 'Stash deleted.');
     }
 }
