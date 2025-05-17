@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Package;
 use App\Models\Stash;
 use App\Models\Staff;
 use App\Models\Actualization;
-use Illuminate\support\Facades\DB;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -78,11 +77,13 @@ class AdminController extends Controller
         ));
     }
 
-    public function deliveries() {
+    public function deliveries()
+    {
         return view('admin.deliveries');
     }
 
-    public function postmats() {
+    public function postmats()
+    {
         return view('admin.postmats');
     }
 }
