@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRequest;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,9 +22,11 @@ class AuthController extends Controller
 
         $user = User::create($user);
 
+        event(new Registered($user));
+
         Auth::login($user);
 
-        return redirect('/');
+        return redirect('verification.notice');
     }
 
     public function login(Request $request)
@@ -39,7 +42,7 @@ class AuthController extends Controller
 
         if (Auth::attempt(['email' => $credentials['login_email'], 'password' => $credentials['password']])) {
             $request->session()->regenerate();
-            return redirect()->intended('/');
+            return redirect()->intended('/dashboard');
         }
 
         return back()->with('login_error', 'Invalid credentials.')->withInput();
