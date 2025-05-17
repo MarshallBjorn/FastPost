@@ -37,7 +37,7 @@
 
         <div class="flex items-center justify-between mt-4">
             <button type="submit" class="form-submit border-green-700 bg-green-200">Update</button>
-            <a href="{{ route('stashes.index') }}" class="form-submit">Cancel</a>
+            <a href="{{ route('stashes.index', $postmat) }}" class="form-submit">Cancel</a>
         </div>
     </form>
 </div>
