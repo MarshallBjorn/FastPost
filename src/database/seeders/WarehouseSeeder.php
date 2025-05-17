@@ -39,13 +39,9 @@ class WarehouseSeeder extends Seeder
                 $offsetLat = fake()->randomFloat(5, -0.2, 0.2); // ~22km latitude
                 $offsetLng = fake()->randomFloat(5, -0.3, 0.3); // ~22km longitude (varies more w/ latitude)
 
-                Postmat::create([
-                    'name' => 'PM-' . strtoupper(Str::random(6)),
-                    'city' => fake()->city(),
-                    'post_code' => fake()->postcode(),
+                Postmat::factory()->create([
                     'latitude' => $data['lat'] + $offsetLat,
                     'longitude' => $data['lng'] + $offsetLng,
-                    'status' => 'active',
                     'warehouse_id' => $warehouse->id,
                 ]);
             }
