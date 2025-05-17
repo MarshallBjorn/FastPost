@@ -37,8 +37,11 @@ class StashController extends Controller
     {
         $validated = $request->validate([
             'size' => 'required|in:S,M,L',
+            'package_id' => 'nullable|integer|exists:packages,id',
+            'reserved_until' => 'nullable|date_format:Y-m-d\TH:i', // for datetime-local input
+            'is_package_in' => 'boolean',
         ]);
-
+    
         $validated['postmat_id'] = $postmat->id;
 
         Stash::create($validated);
@@ -70,9 +73,20 @@ class StashController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Stash $stash)
+    public function update(Request $request, Postmat $postmat, Stash $stash)
     {
-        //
+        $validated = $request->validate([
+            'size' => 'required|in:S,M,L',
+            'package_id' => 'nullable|integer|exists:packages,id',
+            'reserved_until' => 'nullable|date_format:Y-m-d\TH:i',
+            'is_package_in' => 'boolean',
+        ]);
+
+        $stash->update($validated);
+
+        return redirect()
+            ->route('stashes.index', $postmat)
+            ->with('success', 'Stash updated successfully.');
     }
 
     /**

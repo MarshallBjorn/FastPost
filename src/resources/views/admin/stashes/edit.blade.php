@@ -4,7 +4,7 @@
 <div class="max-w-3xl mx-auto p-4">
     <h2 class="text-xl font-bold mb-4">Edit Stash</h2>
 
-    <form method="POST" action="{{ route('stashes.update', $stash) }}">
+    <form action="{{ route('stashes.update', ['postmat' => $stash->postmat_id, 'stash' => $stash->id]) }}" method="POST">
         @csrf
         @method('PUT')
 
