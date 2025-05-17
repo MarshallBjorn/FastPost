@@ -25,10 +25,26 @@
             <nav class="space-x-4 text-sm font-medium">
                 <a href="{{ url('/admin') }}" class="text-gray-700 hover:text-blue-600 transition">Admin page</a>
                 <a href="{{ route('public.postmats.index') }}" class="text-gray-700 hover:text-blue-600 transition">Browse Postmats</a>
-                <a href="{{ url('/login') }}" class="text-gray-700 hover:text-blue-600 transition">Login</a>
                 <a href="{{ route('client.send_package') }}" class="text-gray-700 hover:text-blue-600 transition">Send a parcel</a>
+                @auth
+                    <form action="{{ route('logout') }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" class="text-gray-700 hover:text-blue-600 transition">Logout {{auth()->user()->first_name}}</button>
+                    </form>
+                @else
+                    <a href="{{ url('/auth') }}" class="text-gray-700 hover:text-blue-600 transition">Login</a>
+                @endauth
             </nav>
         </div>
+        @if (Auth::check() && !Auth::user()->hasVerifiedEmail())
+            <div class="bg-yellow-100 text-yellow-800 px-4 py-2 text-center">
+                ⚠️ Please verify your email address.
+                <form action="{{ route('verification.send') }}" method="POST" class="inline">
+                    @csrf
+                    <button type="submit" class="underline">Resend verification email</button>
+                </form>
+            </div>
+        @endif
     </header>
 
     <!-- Main Content -->
