@@ -46,6 +46,7 @@ http://localhost:8000
 
 - To seed database:
   ```bash
+  docker-compose exec app composer require fakerphp/faker --dev
   docker-compose exec app php artisan migrate:fresh
   docker-compose exec app php artisan db:seed
   ```
