@@ -86,8 +86,8 @@ http://localhost:8000
 
 ### **Tabela: `Sortownie`**
 | Kolumna             | Typ danych         | Opis                                  |
-|---------------------|--------------------|----------------------------------------|
-| `id`                | INT (PK)           | Unikalny identyfikator sortowni         |
+|---------------------|--------------------|---------------------------------------|
+| `id`                | INT (PK)           | Unikalny identyfikator sortowni       |
 | `miasto`            | VARCHAR            | Miasto                                |
 | `kod_pocztowy`      | VARCHAR            | Kod pocztowy                          |
 | `szerokosc_geo`     | DECIMAL            | Szerokość geograficzna                |
@@ -97,6 +97,14 @@ http://localhost:8000
 #### Widoki do tabeli `Sortownie`
 - Widok ze wszystkimi sortowniami na mapie
 - Widok do administracji sortowniami
+  
+### **Tabela: `SortowaniePolaczenia`**
+| Kolumna              | Typ danych               | Opis                                     |
+|----------------------|--------------------------|------------------------------------------|
+| `id`                 | INT(PK)                  | Unikalny identyfikator sortowni          |
+| `from_warehouse_id`  | INT (FK -> sortownia.id) | ID sortowni z której wychodzi połączenie |
+| `to_warehouse_id`    | INT (FK -> sortownia.id  | ID sortowni do której idzie polączenie   |
+| `dystans_km`         | DECIMAL                  | Odległość pomiędzy sortowniami           |
 
 ---
 
