@@ -11,7 +11,7 @@ Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('ho
 
 // Authentication: Guests only
 Route::middleware('guest')->group(function () {
-    Route::view('/auth', 'auth.login')->name('auth');
+    Route::view('/login', 'auth.login')->name('auth');
     Route::post('/login', [AuthController::class, 'login'])->name('login');
     Route::post('/register', [AuthController::class, 'register'])->name('register');
 });
@@ -39,7 +39,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Admin routes
-Route::prefix('admin')->middleware(['auth', 'verified', 'is_admin'])->group(function () {
+Route::prefix('admin')->middleware('is_admin')->group(function () {
     Route::get('/', [App\Http\Controllers\Admin\AdminController::class, 'index'])->name('admin.dashboard');
 
     Route::resource('packages', App\Http\Controllers\Admin\PackageController::class);
