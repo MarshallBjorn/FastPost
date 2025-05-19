@@ -16,12 +16,13 @@ class IsAdmin
      */
     public function handle(Request $request, Closure $next)
     {
-        if (Auth::check() && Auth::user()->is_admin) {
+        // if (Auth::check() && Auth::user()->is_admin) {
+        if (Auth::check() && Auth::user()->hasVerifiedEmail()) {
             return $next($request);
         }
 
         // TODO: Add real admin check logic.
 
-        return redirect('login')->with('auth_required', 'You do not have permission to access this page.');
+        return redirect('/')->with('auth_required', 'You do not have permission to access this page.');
     }
 }
