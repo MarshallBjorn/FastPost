@@ -35,7 +35,7 @@
                         <button type="submit" class="text-gray-700 hover:text-blue-600 transition">Logout {{auth()->user()->first_name}}</button>
                     </form>
                 @else
-                    <a href="{{ url('/auth') }}" class="text-gray-700 hover:text-blue-600 transition">Login</a>
+                    <a href="{{ url('/login') }}" class="text-gray-700 hover:text-blue-600 transition">Login</a>
                 @endauth
             </nav>
         </div>

@@ -1,6 +1,13 @@
 @extends('layouts.public')
 
 @section('content')
+
+@if (session('auth_required'))
+    <div class="max-w-5xl mx-auto bg-yellow-100 text-yellow-800 px-4 py-2 rounded mb-4 border border-yellow-300">
+        {{ session('auth_required') }}
+    </div>
+@endif
+
 <div class="max-w-5xl mx-auto mt-10 grid grid-cols-1 md:grid-cols-2 gap-10 bg-white p-6 rounded shadow">
 
     {{-- Login Form --}}
