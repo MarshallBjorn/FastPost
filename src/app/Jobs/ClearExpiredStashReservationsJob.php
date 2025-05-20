@@ -16,7 +16,7 @@ class ClearExpiredStashReservationsJob implements ShouldQueue
 
     public function handle()
     {
-        Log::info("Started ClearExpiredStashReservationsJob");
+        Log::channel('jobs')->info("Started ClearExpiredStashReservationsJob");
 
         $count = Stash::where('reserved_until', '<=', now())
             ->whereNotNull('reserved_until')
@@ -27,6 +27,6 @@ class ClearExpiredStashReservationsJob implements ShouldQueue
                 'is_package_in' => false,
             ]);
 
-        Log::info("Cleared {$count} expired stash reservations via queue");
+        Log::channel('jobs')->info("Cleared {$count} expired stash reservations via queue");
     }
 }
