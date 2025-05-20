@@ -51,7 +51,11 @@ Route::prefix('admin')->middleware('is_admin')->group(function () {
 
     Route::get('postmats/{postmat}/stashes', [App\Http\Controllers\Admin\StashController::class, 'index'])->name('stashes.index');
     Route::get('postmats/{postmat}/stashes/create', [App\Http\Controllers\Admin\StashController::class, 'create'])->name('stashes.create');
+    Route::get('postmats/stashes/edit/{stash}', [App\Http\Controllers\Admin\StashController::class, 'edit'])->name('stashes.edit');
     Route::post('postmats/{postmat}/stashes', [App\Http\Controllers\Admin\StashController::class, 'store'])->name('stashes.store');
+    Route::delete('postmats/{postmat}/stashes/{stash}', [App\Http\Controllers\Admin\StashController::class, 'destroy'])->name('stashes.destroy');
+    Route::put('postmats/{postmat}/edit/{stash}', [App\Http\Controllers\Admin\StashController::class, 'update'])->name('stashes.update');
+    Route::resource('users', App\Http\Controllers\Admin\UserController::class);
 });
 
 // Public package routes (client)

@@ -44,6 +44,14 @@ http://localhost:8000
   ```
 ---
 
+- To seed database:
+  ```bash
+  docker-compose exec app composer require fakerphp/faker --dev
+  docker-compose exec app php artisan migrate:fresh
+  docker-compose exec app php artisan db:seed
+  ```
+---
+
 **Notes**
 1. The setup uses PostgreSQL 15 with Alpine Linux for a lightweight container.
 2. Nginx is configured to serve the Laravel application.

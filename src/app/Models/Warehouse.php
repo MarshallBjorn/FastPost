@@ -42,8 +42,9 @@ class Warehouse extends Model
         return $this->hasMany(WarehouseConnection::class, 'from_warehouse_id');
     }
 
-    public function connectionsTo()
+    public function connections()
     {
-        return $this->hasMany(WarehouseConnection::class, 'to_warehouse_id');
+        return $this->hasMany(WarehouseConnection::class, 'from_warehouse_id')
+            ->orWhere('to_warehouse_id', $this->id);
     }
 }

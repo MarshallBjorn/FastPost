@@ -25,7 +25,7 @@ class ActualizationFactory extends Factory
         }
 
         return [
-            'package_id' => Package::factory(),
+            'package_id' => Package::inRandomOrder()->first()?->id,
             'message' => $this->faker->randomElement([
                 'sent',
                 'in_warehouse',

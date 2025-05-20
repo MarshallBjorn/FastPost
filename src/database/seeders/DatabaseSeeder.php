@@ -13,12 +13,12 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            WarehouseSeeder::class,
+            WarehouseConnectionSeeder::class,
+            PackageSeeder::class,
             StashSeeder::class,
             UserSeeder::class,
-            PackageSeeder::class,
             ActualizationSeeder::class,
-            WarehouseSeeder::class,
-            WarehouseConnectionSeeder::class
         ]);
     }
 }

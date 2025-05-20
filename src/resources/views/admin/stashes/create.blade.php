@@ -18,13 +18,22 @@
     <form action="{{ route('stashes.store', $postmat) }}" method="POST" class="space-y-4">
         @csrf
         <div>
-            <label>Size</label>
-            <select name="size" class="form-input" required>
-                <option value="">Select Size</option>
-                <option value="S">Small</option>
-                <option value="M">Medium</option>
-                <option value="L">Large</option>
-            </select>
+            <!-- Size -->
+            <label class="block mb-2">Size</label>
+            <input type="text" class="form-input mb-4" name="size" value="{{ old('size') }}" required>
+
+            <!-- Package ID -->
+            <label class="block mb-2">Package ID (optional)</label>
+            <input type="text" class="form-input mb-4" name="package_id" value="{{ old('package_id') }}">
+
+            <!-- Reserved Until -->
+            <label class="block mb-2">Reserved Until (YYYY-MM-DD HH:MM:SS)</label>
+            <input type="datetime-local" class="form-input mb-4" name="reserved_until" value="{{ old('reserved_until') }}">
+
+            <!-- Is Package In -->
+            <label class="block mb-2">Is Package In</label>
+            <input type="hidden" name="is_package_in" value="0">
+            <input type="checkbox" name="is_package_in" value="1" class="form-checkbox mb-4" @checked(old('is_package_in'))>
         </div>
 
         <button class="form-submit">Create</button>
