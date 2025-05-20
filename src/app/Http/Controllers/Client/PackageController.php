@@ -126,7 +126,6 @@ class PackageController extends Controller
         $available_stash->reserveFor($package);
 
         // Generate QrCode
-
         $track_url = "http://localhost:8000/track?code={$package->id}";
         $qrCode = new QrCode($track_url);
         $qrCode->setSize(200);
