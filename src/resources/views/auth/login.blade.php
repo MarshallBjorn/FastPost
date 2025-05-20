@@ -1,6 +1,7 @@
 @extends('layouts.public')
 
 @section('content')
+
 <div class="max-w-5xl mx-auto mt-10 grid grid-cols-1 md:grid-cols-2 gap-10 bg-white p-6 rounded shadow">
 
     {{-- Login Form --}}

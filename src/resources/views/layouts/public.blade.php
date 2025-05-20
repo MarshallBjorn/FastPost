@@ -32,7 +32,7 @@
                         <button type="submit" class="text-gray-700 hover:text-blue-600 transition">Logout {{auth()->user()->first_name}}</button>
                     </form>
                 @else
-                    <a href="{{ url('/auth') }}" class="text-gray-700 hover:text-blue-600 transition">Login</a>
+                    <a href="{{ url('/login') }}" class="text-gray-700 hover:text-blue-600 transition">Login</a>
                 @endauth
             </nav>
         </div>
@@ -50,6 +50,13 @@
     <!-- Main Content -->
     <main class="flex-grow">
         <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+
+            @if (session('auth_required'))
+                <div class="max-w-7xl mx-auto bg-yellow-100 text-yellow-800 px-4 py-2 rounded mb-4 border border-yellow-300">
+                    {{ session('auth_required') }}
+                </div>
+            @endif
+
             @yield('content')
         </div>
     </main>
