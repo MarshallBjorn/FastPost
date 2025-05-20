@@ -42,7 +42,11 @@ class WarehouseController extends Controller
             'status' => 'required|in:active,unavailable,maintenance',
         ]);
 
-        Warehouse::create($request->all());
+        $warehouse = Warehouse::create($request->only([
+            'city', 'post_code', 'latitude', 'longitude', 'status'
+        ]));
+
+        $this->syncConnections($warehouse, json_decode($request->input('connections'), true));
 
         return redirect()->route('warehouses.index')->with('success', 'Warehouse created.');
     }
@@ -67,6 +71,7 @@ class WarehouseController extends Controller
             $query->where('from_warehouse_id', $warehouse->id)
                 ->orWhere('to_warehouse_id', $warehouse->id);
         })->get();
+        $all_connections = WarehouseConnection::all(); 
 
         // Normalize connections to keys like "2-5"
         $connectedKeys = $connections->map(function ($conn) {
@@ -76,7 +81,9 @@ class WarehouseController extends Controller
         return view('admin.warehouses.edit', compact(
             'warehouse',
             'all_warehouses',
-            'connectedKeys'
+            'connectedKeys',
+            'connections',
+            'all_connections'
         ));
     }
 
@@ -94,49 +101,13 @@ class WarehouseController extends Controller
             'status' => 'required|in:active,unavailable,maintenance',
         ]);
 
-        $warehouse->update($request->only(['city', 'post_code', 'latitude', 'longitude', 'status']));
+        $warehouse->update($request->only([
+            'city', 'post_code', 'latitude', 'longitude', 'status'
+        ]));
 
-        $submittedKeys = collect(json_decode($request->input('connections', '[]'), true));
+        $connections = json_decode($request->input('connections'), true);
 
-        $existingConnections = WarehouseConnection::where(function ($query) use ($warehouse) {
-            $query->where('from_warehouse_id', $warehouse->id)
-                ->orWhere('to_warehouse_id', $warehouse->id);
-        })->get();
-
-        $existingKeys = $existingConnections->map(function ($conn) {
-            return collect([$conn->from_warehouse_id, $conn->to_warehouse_id])->sort()->implode('-');
-        });
-
-        $toAdd = $submittedKeys->diff($existingKeys);
-        $toRemove = $existingKeys->diff($submittedKeys);
-
-        foreach ($toAdd as $key) {
-            [$id1, $id2] = explode('-', $key);
-
-            $w1 = Warehouse::find($id1);
-            $w2 = Warehouse::find($id2);
-
-            if ($w1 && $w2) {
-                $distance = $this->haversineDistance($w1->latitude, $w1->longitude, $w2->latitude, $w2->longitude);
-                WarehouseConnection::create([
-                    'from_warehouse_id' => $id1,
-                    'to_warehouse_id' => $id2,
-                    'distance_km' => round($distance, 2),
-                ]);
-            }
-        }
-
-        foreach ($toRemove as $key) {
-            [$id1, $id2] = explode('-', $key);
-
-            WarehouseConnection::where(function ($query) use ($id1, $id2) {
-                $query->where(function ($q) use ($id1, $id2) {
-                    $q->where('from_warehouse_id', $id1)->where('to_warehouse_id', $id2);
-                })->orWhere(function ($q) use ($id1, $id2) {
-                    $q->where('from_warehouse_id', $id2)->where('to_warehouse_id', $id1);
-                });
-            })->delete();
-        }
+        $this->syncConnections($warehouse, $connections);
 
         return redirect()->route('warehouses.index')->with('success', 'Warehouse updated.');
     }
@@ -167,9 +138,7 @@ class WarehouseController extends Controller
 
     private function syncConnections(Warehouse $warehouse, array $submittedConnectionIds): void
     {
-        $submittedKeys = collect($submittedConnectionIds)->map(function ($toId) use ($warehouse) {
-            return collect([$warehouse->id, $toId])->sort()->implode('-');
-        });
+        $submittedKeys = collect($submittedConnectionIds);
 
         $existingConnections = WarehouseConnection::where(function ($query) use ($warehouse) {
             $query->where('from_warehouse_id', $warehouse->id)

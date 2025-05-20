@@ -41,78 +41,117 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const currentId = {{ $warehouse->id }};
-            const lat = {{ $warehouse->latitude }};
-            const lng = {{ $warehouse->longitude }};
-            const warehouses = @json($all_warehouses);
-            const existingKeys = @json($connectedKeys);
+    document.addEventListener('DOMContentLoaded', function () {
+        const lat = {{ $warehouse->latitude }};
+        const lng = {{ $warehouse->longitude }};
+        const currentWarehouseId = {{ $warehouse->id }};
+        const warehouses = @json($all_warehouses);
+        const existingConnections = @json($connections);
+        const allConnections = @json($all_connections);
 
-            const selectedKeys = new Set(existingKeys);
-            const map = L.map('map').setView([lat, lng], 13);
-            const lines = {};
+        const warehouseMap = {};
+        warehouses.forEach(w => warehouseMap[w.id] = w);
+        warehouseMap[currentWarehouseId] = {
+            id: currentWarehouseId,
+            latitude: lat,
+            longitude: lng,
+            city: "{{ $warehouse->city }}",
+            post_code: "{{ $warehouse->post_code }}"
+        };
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(map);
+        const selectedConnectionKeys = new Set();
 
-            L.marker([lat, lng])
-                .addTo(map)
-                .bindPopup("{{ $warehouse->city }}, {{ $warehouse->post_code }}")
-                .openPopup();
-
-            warehouses.forEach(w => {
-                const key = [currentId, w.id].sort((a, b) => a - b).join('-');
-                const distance = haversineDistance(lat, lng, w.latitude, w.longitude).toFixed(2);
-
-                const marker = L.marker([w.latitude, w.longitude])
-                    .addTo(map)
-                    .bindPopup(`<strong>${w.city}, ${w.post_code}</strong><br>Distance: ${distance} km`);
-
-                if (selectedKeys.has(key)) {
-                    lines[key] = L.polyline([[lat, lng], [w.latitude, w.longitude]], { color: 'blue' }).addTo(map);
-                }
-
-                marker.on('mouseover', function () {
-                    marker.openPopup();
-                });
-                marker.on('mouseout', function () {
-                    marker.closePopup();
-                });
-
-                marker.on('click', () => {
-                    if (selectedKeys.has(key)) {
-                        selectedKeys.delete(key);
-                        if (lines[key]) {
-                            map.removeLayer(lines[key]);
-                            delete lines[key];
-                        }
-                    } else {
-                        selectedKeys.add(key);
-                        lines[key] = L.polyline([[lat, lng], [w.latitude, w.longitude]], { color: 'green' }).addTo(map);
-                    }
-                });
-            });
-
-            document.querySelector('form').addEventListener('submit', function () {
-                document.getElementById('connections-json').value = JSON.stringify(Array.from(selectedKeys));
-            });
-
-            function haversineDistance(lat1, lon1, lat2, lon2) {
-                const R = 6371; // Earth's radius in km
-                const toRad = angle => angle * Math.PI / 180;
-
-                const dLat = toRad(lat2 - lat1);
-                const dLon = toRad(lon2 - lon1);
-
-                const a = Math.sin(dLat / 2) ** 2 +
-                        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-                        Math.sin(dLon / 2) ** 2;
-
-                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-                return R * c;
-            }
+        // Initialize with existing connections for this warehouse
+        existingConnections.forEach(conn => {
+            const ids = [conn.from_warehouse_id, conn.to_warehouse_id].sort((a, b) => a - b);
+            selectedConnectionKeys.add(`${ids[0]}-${ids[1]}`);
         });
+
+        const map = L.map('map').setView([lat, lng], 6);
+        const lines = {}; // lines tied to each other warehouse
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Draw all connections (gray)
+        allConnections.forEach(conn => {
+            const w1 = warehouseMap[conn.from_warehouse_id];
+            const w2 = warehouseMap[conn.to_warehouse_id];
+            if (!w1 || !w2) return;
+
+            L.polyline([[w1.latitude, w1.longitude], [w2.latitude, w2.longitude]], {
+                color: 'blue',
+                weight: 1,
+            }).addTo(map);
+        });
+
+        // Draw main warehouse marker
+        L.marker([lat, lng])
+            .addTo(map)
+            .bindPopup("{{ $warehouse->city }}, {{ $warehouse->post_code }}")
+            .openPopup();
+
+        // Draw other markers and make clickable
+        warehouses.forEach(w => {
+            const marker = L.marker([w.latitude, w.longitude])
+                .addTo(map)
+                .bindPopup(`${w.city}, ${w.post_code}`);
+
+            const ids = [currentWarehouseId, w.id].sort((a, b) => a - b);
+            const key = `${ids[0]}-${ids[1]}`;
+
+            if (selectedConnectionKeys.has(key)) {
+                const line = L.polyline([[lat, lng], [w.latitude, w.longitude]], {
+                    color: 'green',
+                    weight: 3,
+                }).addTo(map);
+                lines[w.id] = line;
+            }
+
+            // Hover line preview
+            marker.on('mouseover', function () {
+                if (lines[w.id]) return;
+                lines[w.id] = L.polyline([[lat, lng], [w.latitude, w.longitude]], {
+                    color: 'orange',
+                    dashArray: '4',
+                    weight: 2,
+                }).addTo(map);
+            });
+
+            marker.on('mouseout', function () {
+                if (selectedConnectionKeys.has(key)) return;
+                if (lines[w.id]) {
+                    map.removeLayer(lines[w.id]);
+                    delete lines[w.id];
+                }
+            });
+
+            // Click to toggle
+            marker.on('click', function () {
+                if (selectedConnectionKeys.has(key)) {
+                    selectedConnectionKeys.delete(key);
+                    if (lines[w.id]) {
+                        map.removeLayer(lines[w.id]);
+                        delete lines[w.id];
+                    }
+                } else {
+                    selectedConnectionKeys.add(key);
+                    const line = L.polyline([[lat, lng], [w.latitude, w.longitude]], {
+                        color: 'green',
+                        weight: 3,
+                    }).addTo(map);
+                    lines[w.id] = line;
+                }
+            });
+        });
+
+        // On form submit, serialize selected keys
+        document.querySelector('form').addEventListener('submit', function () {
+            const json = JSON.stringify(Array.from(selectedConnectionKeys));
+            document.getElementById('connections-json').value = json;
+        });
+    });
     </script>
 </div>
 @endsection
