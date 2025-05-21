@@ -25,7 +25,6 @@
                     <div class="pb-6">
                         <h2 class="text-lg font-semibold text-gray-800 mb-4">Receiver Information</h2>
                         <div class="space-y-2">
-                            <p><span class="font-medium">Name:</span> {{ $package->receiver->name }}</p>
                             <p><span class="font-medium">Email:</span> {{ $package->receiver_email }}</p>
                             <p><span class="font-medium">Phone:</span> {{ $package->receiver_phone }}</p>
                         </div>
@@ -52,7 +51,7 @@
                                             No available stashes at <span
                                                 class="font-semibold">{{ $originalStartPostmat->name }}</span>.
                                             Your package will be sent from <span
-                                                class="font-semibold">{{ $package->startPostmat->name }}</span> instead. Stash was reserved for you in new mentioned Postmat.
+                                                class="font-semibold">{{ $package->startPostmat->name }}</span> instead. Stash is reserved for you.
                                         </p>
                                         @if (isset($distance) && $distance > 0)
                                             <p class="mt-1">The new location is {{ $distance }} km away from your
@@ -134,7 +133,8 @@
                     <h3 class="text-lg font-medium mb-4">Package QR Code</h3>
                     <img src="data:image/png;base64, {{ $qrCode }}" alt="Package QR Code"
                         class="w-48 h-48 border p-2 rounded-lg">
-                    <p class="mt-2 text-sm text-gray-500">Scan this QR code to track your package</p>
+                    <p class="mt-2 text-sm text-gray-500">  Scan this QR code to track your package, or access the tracking page using the link below.</p>
+                    <a href="{{ $trackUrl }}" class="text-blue-500 mt-2">{{ $trackUrl }}</a>
                 </div>
 
                 <!-- Actions -->

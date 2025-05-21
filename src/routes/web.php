@@ -59,8 +59,10 @@ Route::prefix('admin')->middleware('is_admin')->group(function () {
 });
 
 // Public package routes (client)
-Route::get('/client/packages/send_package', [App\Http\Controllers\Client\PackageController::class, 'showForm'])->name('client.send_package');
-Route::post('/client/packages/send_package', [App\Http\Controllers\Client\PackageController::class, 'send_package'])->name('client.send_package.submit');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/client/packages/send_package', [App\Http\Controllers\Client\PackageController::class, 'showForm'])->name('client.send_package');
+    Route::post('/client/packages/send_package', [App\Http\Controllers\Client\PackageController::class, 'send_package'])->name('client.send_package.submit');
+});
 Route::get('/track', [App\Http\Controllers\Client\PackageController::class, 'track'])->name('package.lookup');
 
 // Public Postmats

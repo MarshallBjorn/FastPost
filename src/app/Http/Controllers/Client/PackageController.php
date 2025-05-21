@@ -11,6 +11,7 @@ use App\Models\Actualization;
 use Endroid\QrCode\QrCode;
 use App\Models\Stash;
 use App\Utils\DistanceUtils;
+use Illuminate\Support\Facades\Auth;
 
 class PackageController extends Controller
 {
@@ -36,18 +37,9 @@ class PackageController extends Controller
         $receiver = User::where('email', $request->email)->first();
 
         if (!$receiver) {
-            // return back()->withErrors(['email' => "Couldn't find any user with provided e-mail"]);
-
-            $receiver = User::create([
-                'email' => $request->email,
-                'name' => 'Unknown Recipient',
-                'first_name' => 'Unknown',
-                'last_name' => 'User',
-                'phone' => $request->phone,
-                'password' => bcrypt('passwordpassword'), // or random string
-            ]);
-
-            session()->flash('warning', "No existing user found with that email. A new placeholder recipient was created.");
+            $receiver_id = 0;
+        } else {
+            $receiver_id = $receiver->id;
         }
 
         $package = new Package();
@@ -109,12 +101,10 @@ class PackageController extends Controller
             }
         }
 
-        // $package->sender_id = Auth::id();
-        // For now just get static user
-        $package->sender_id = 1;
-        $package->receiver_id = $receiver->id;
+        $package->sender_id = Auth::id();
+        // $package->receiver_id = $receiver_id;
         $package->receiver_phone = $request->phone;
-        $package->receiver_email = $receiver->email;
+        $package->receiver_email = $request->email;
         $package->destination_postmat_id = $postmat->id;
         $package->start_postmat_id = $start_postmat->id;
         // ['registered', 'in_transit', 'in_postmat', 'collected']
@@ -136,8 +126,8 @@ class PackageController extends Controller
         $available_stash->reserveFor($package);
 
         // Generate QrCode
-
-        $qrCode = new QrCode("http://localhost:8000/track?code={$package->id}");
+        $track_url = "http://localhost:8000/track?code={$package->id}";
+        $qrCode = new QrCode($track_url);
         $qrCode->setSize(200);
         $qrCodeImage = $qrCode->writeString();
         $qrCodeBase64 = base64_encode($qrCodeImage);
@@ -147,10 +137,12 @@ class PackageController extends Controller
             'qrCode' => $qrCodeBase64,
             'stashChanged' => $stash_changed,
             'originalStartPostmat' => $original_start_postmat,
-            'distance' => $distance ?? null
+            'distance' => $distance ?? null,
+            'trackUrl' => $track_url,
         ]);
     }
 
+    # TODO if user is logged in, then show diffrent page with function to open the stash.
     public function track(Request $request)
     {
         $request->validate([

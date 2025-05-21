@@ -21,5 +21,5 @@ return Application::configure(basePath: dirname(__DIR__))
     })->withSchedule(function (Schedule $schedule) {
         $schedule->job(new \App\Jobs\ClearExpiredStashReservationsJob)
             ->everyMinute()
-            ->description('Clear expired stash reservations where package not delivered');
+            ->description('Clear expired stash reservations where the parcel was not delivered within 24h.');
     })->create();

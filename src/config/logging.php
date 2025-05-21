@@ -57,6 +57,12 @@ return [
             'path' => storage_path('logs/mail.log'),
             'level' => 'debug',
         ],
+      
+        'jobs' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/jobs.log'),
+            'level' => 'info',
+        ],
 
         'stack' => [
             'driver' => 'stack',
