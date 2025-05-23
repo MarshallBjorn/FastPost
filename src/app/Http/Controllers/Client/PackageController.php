@@ -136,6 +136,7 @@ class PackageController extends Controller
         Actualization::create([
             'package_id' => $package->id,
             // message = ['sent', 'in_warehouse', 'in_delivery']
+            'route_remaining' => $package->route_path,
             'message' => 'sent',
             'created_at' => now(),
         ]);

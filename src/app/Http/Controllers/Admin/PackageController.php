@@ -118,4 +118,35 @@ class PackageController extends Controller
         $package->delete();
         return redirect()->route('packages.index')->with('success', 'Package deleted.');
     }
+
+    public function advancePackage(Package $package) {
+        $latest = $package->latestActualization;
+        $route = json_decode($latest->route_remaining, true);
+
+        if(empty($route)) {
+            Actualization::create([
+                'package_id' => $package->id,
+                'route_remaining' => [],
+                'current_warehouse_id' => null,
+                'message' => 'in_delivery'
+            ]);
+            return;
+        }
+
+        $current = array_shift($route);
+        $next = $route[0] ?? null;
+
+        Actualization::create([
+            'package_id' => $package->id,
+            'route_remaining' => json_encode($route),
+            'current_warehouse_id' => $current,
+            'next_warehouse_id' => $next,
+            'message' => 'in_warehouse',
+            'last_courier_id' => 1879,
+            'created_at' => now(),
+        ]);
+
+        return redirect()->route('packages.index')
+                         ->with('success', 'Package advanced along its route');
+    }
 }

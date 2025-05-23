@@ -16,8 +16,8 @@ class Actualization extends Model
     protected $fillable = [
         'package_id',
         'route_remaining',
-        'current_warehouse',
-        'next_warehouse',
+        'current_warehouse_id',
+        'next_warehouse_id',
         'message',
         'last_courier_id',
         'created_at'
