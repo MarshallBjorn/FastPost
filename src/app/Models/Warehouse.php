@@ -47,4 +47,14 @@ class Warehouse extends Model
         return $this->hasMany(WarehouseConnection::class, 'from_warehouse_id')
             ->orWhere('to_warehouse_id', $this->id);
     }
+
+    public function outgoingPackages() {
+        return $this->hasMany(Actualization::class, 'current_warehouse_id')
+                    ->where('status', 'in_warehouse');
+    }
+
+    public function incomingPackages() {
+        return $this->hasMany(Actualization::class, 'next_warehouse_id')
+                    ->where('status', 'in_transit');
+    }
 }

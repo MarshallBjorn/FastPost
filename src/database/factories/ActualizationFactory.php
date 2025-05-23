@@ -24,13 +24,16 @@ class ActualizationFactory extends Factory
             $courierStaff = Staff::factory()->state(['staff_type' => 'courier'])->create();
         }
 
+        $package = Package::inRandomOrder()->first();
+
         return [
-            'package_id' => Package::inRandomOrder()->first()?->id,
+            'package_id' => $package,
             'message' => $this->faker->randomElement([
                 'sent',
                 'in_warehouse',
                 'in_delivery'
             ]),
+            'route_remaining' => $package->route_path,
             'last_courier_id' => $courierStaff->user_id,
             'created_at' => $this->faker->dateTimeBetween('-10 days', 'now'),
         ];

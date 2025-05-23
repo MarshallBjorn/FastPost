@@ -69,4 +69,9 @@ class Package extends Model
     {
         return $this->hasMany(Actualization::class)->orderBy('created_at', 'asc');
     }
+
+    public function latestActualization()
+    {
+        return $this->hasOne(Actualization::class)->latestOfMany();
+    }
 }
