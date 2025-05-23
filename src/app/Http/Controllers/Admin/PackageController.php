@@ -37,6 +37,7 @@ class PackageController extends Controller
             'status' => 'required|string|in:registered,in_transit,in_postmat,collected',
             'size' => 'required|in:S,M,L',
             'weight' => 'required|integer|min:1',
+            'unlock_code' => 'required|digits:6',
         ], [
             'status.in' => 'The status must be one of the following: registered, in_transit, in_postmat, collected.',
             'weight.integer' => 'Weight must be an integer in grams.',
@@ -106,6 +107,7 @@ class PackageController extends Controller
             'receiver_email' => 'required|email',
             'receiver_phone' => 'required|string',
             'status' => 'required|string|in:registered,in_transit,in_postmat,collected',
+            'unlock_code' => 'required|digits:6',
         ]);
 
         $package->update($data);

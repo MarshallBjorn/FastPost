@@ -10,14 +10,14 @@
                     Package not found.
                 </div>
             @else
-                @if($maskedEmail || $maskedPhone)
+                @if ($maskedEmail || $maskedPhone)
                     <div class="text-center my-6">
-                        @if($maskedEmail)
+                        @if ($maskedEmail)
                             <p class="text-gray-700 text-md">
                                 Reciever Email: <strong>{{ $maskedEmail }}</strong>
                             </p>
                         @endif
-                        @if($maskedPhone)
+                        @if ($maskedPhone)
                             <p class="text-gray-700 text-md">
                                 Reciever Phone: <strong>{{ $maskedPhone }}</strong>
                             </p>
@@ -25,13 +25,13 @@
                     </div>
                 @endif
 
-                @if(isset($error))
+                @if (isset($error))
                     <div class="text-center text-red-500 font-semibold">{{ $error }}</div>
                 @elseif($actualizations->isEmpty())
                     <p class="text-gray-500 text-center">No tracking updates available for this package yet.</p>
                 @else
                     <ul class="space-y-4">
-                        @foreach($actualizations as $entry)
+                        @foreach ($actualizations as $entry)
                             <li class="border-l-4 border-blue-600 pl-4 py-2 bg-blue-50 rounded shadow-sm">
                                 <div class="text-lg font-semibold text-blue-800 capitalize">
                                     {{ str_replace('_', ' ', $entry->message) }}
@@ -41,6 +41,17 @@
                                 </div>
                             </li>
                         @endforeach
+
+                        @if ($package->status === 'collected' && $package->collected_date)
+                            <li class="border-l-4 border-green-600 pl-4 py-2 bg-green-50 rounded shadow-sm">
+                                <div class="text-lg font-semibold text-green-800">
+                                    Package Collected
+                                </div>
+                                <div class="text-sm text-gray-600">
+                                    {{ \Carbon\Carbon::parse($package->collected_date)->format('d M Y, H:i') }}
+                                </div>
+                            </li>
+                        @endif
                     </ul>
                 @endif
 
@@ -55,15 +66,15 @@
             @endif
         </div>
     </div>
-    @endsection
+@endsection
 
 @if (!$not_exist)
     @push('scripts')
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-        
+
         <script>
-            document.addEventListener('DOMContentLoaded', function () {
+            document.addEventListener('DOMContentLoaded', function() {
                 const lat = {{ $postmat->latitude }};
                 const lng = {{ $postmat->longitude }};
 
@@ -75,7 +86,9 @@
 
                 L.marker([lat, lng])
                     .addTo(map)
-                    .bindPopup("<strong>{{ $postmat->name }}</strong><br>{{ $postmat->city }}, {{ $postmat->{'post-code'} }}")
+                    .bindPopup(
+                        "<strong>{{ $postmat->name }}</strong><br>{{ $postmat->city }}, {{ $postmat->{'post-code'} }}"
+                        )
                     .openPopup();
             });
         </script>
