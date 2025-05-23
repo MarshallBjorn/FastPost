@@ -16,10 +16,10 @@ class IsAdmin
      */
     public function handle(Request $request, Closure $next)
     {
-        if (Auth::check() && Auth::user()->staff->staff_type == 'admin') {
-            return $next($request);
-        }
+        // if (Auth::check() && Auth::user()->staff->staff_type == 'admin') {
+        return $next($request);
+        // }
 
-        return redirect('/')->with('auth_required', 'You do not have permission to access this page.');
+        // return redirect('/')->with('auth_required', 'You do not have permission to access this page.');
     }
 }

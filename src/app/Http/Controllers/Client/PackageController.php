@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Client;
 use App\Models\Package;
 use App\Models\User;
 use App\Models\Postmat;
+use App\Services\Pathfinder;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Actualization;
@@ -111,6 +112,24 @@ class PackageController extends Controller
         $package->weight = $request->weight;
         $package->size = $request->size;
         $package->sent_at = now();
+
+        $pathfinder = new Pathfinder();
+        $startWarehouseId = $start_postmat->warehouse_id;
+        $endWarehouseId = $postmat->warehouse_id;
+
+        $package->route_path = $pathfinder->findPath($startWarehouseId, $endWarehouseId);
+
+        if ($package->route_path) {
+            echo "No path found.\n";
+        } else {
+            printf("Route for Package #%d:\n", $package->Id);
+            foreach ($package->route_path as $index => $warehouseId) {
+                printf("Step %d: Warehouse ID %d\n", $index, $warehouseId);
+            }
+        }
+
+        $package->route_path = json_encode($package->route_path);
+
         $package->save();
 
         // Create Package history

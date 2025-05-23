@@ -15,25 +15,23 @@ class StashSeeder extends Seeder
 {
     public function run(): void
     {
-        $faker = \Faker\Factory::create();
+        Postmat::all()->each(function ($postmat) {
+            for ($i = 0; $i < 30; $i++) {
+                $stashData = [
+                    'postmat_id' => $postmat->id,
+                    'size' => fake()->randomElement(['S', 'M', 'L']),
+                ];
 
-        Postmat::all()->each(function ($postmat) use ($faker) {
-            $hasPackage = $faker->boolean(50);
+                if (fake()->boolean(50)) {
+                    $package = Package::factory()->create([
+                        'status' => 'in_postmat',
+                        'pickup_code' => fake()->regexify('[A-Z0-9]{6}'),
+                    ]);
+                    $stashData['package_id'] = $package->id;
+                }
 
-            $stashData = [
-                'postmat_id' => $postmat->id,
-                'size' => $faker->randomElement(['S', 'M', 'L']),
-            ];
-
-            if ($hasPackage) {
-                $package = Package::factory()->create([
-                    'status' => 'in_postmat',
-                    'pickup_code' => $faker->regexify('[A-Z0-9]{6}'),
-                ]);
-                $stashData['package_id'] = $package->id;
+                Stash::create($stashData);
             }
-
-            Stash::create($stashData);
         });
     }
 }

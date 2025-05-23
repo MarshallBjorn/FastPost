@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Models\Postmat;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Auth\Events\Validated;
 use App\Models\Actualization;
 
 class PackageController extends Controller

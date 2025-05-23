@@ -25,6 +25,7 @@ class Package extends Model
         'size',
         'weight',
         'unlock_code',
+        'route_path'
     ];
 
     protected static function boot()
