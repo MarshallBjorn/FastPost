@@ -65,6 +65,10 @@ Route::middleware(['auth'])->group(function () {
 });
 Route::get('/track', [App\Http\Controllers\Client\PackageController::class, 'track'])->name('package.lookup');
 
+Route::get('/client/packages/collect', [App\Http\Controllers\Client\PackageController::class, 'show_collect_package'])->name('client.collect_package');
+Route::post('/client/packages/collect', [App\Http\Controllers\Client\PackageController::class, 'collect_package'])->name('client.collect_package.submit');
+Route::view('/client/packages/collected', 'public.client.packages.collected')->name('client.package.collected');
+
 // Public Postmats
 Route::get('/postmats', [PostmatPublicController::class, 'index'])->name('public.postmats.index');
 Route::get('/postmats/filter', [PostmatPublicController::class, 'filter'])->name('public.postmats.filter');

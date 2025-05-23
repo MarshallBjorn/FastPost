@@ -19,6 +19,9 @@
             <div class="font-semibold">Receiver Phone:</div>
             <div>{{ $package->receiver_phone }}</div>
 
+            <div class="font-semibold">Unlock code:</div>
+            <div>{{ $package->unlock_code }}</div>
+
             <div class="font-semibold">Sender ID:</div>
             <div>{{ $package->sender_id }}</div>
 

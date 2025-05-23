@@ -24,6 +24,7 @@ class Package extends Model
         'collected_date',
         'size',
         'weight',
+        'unlock_code',
     ];
 
     protected static function boot()

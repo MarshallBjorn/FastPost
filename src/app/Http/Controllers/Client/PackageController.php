@@ -22,7 +22,6 @@ class PackageController extends Controller
         return view('public.client.packages.send_package', compact('postmats'));
     }
 
-    // TODO only logged user could send package.
     public function send_package(Request $request)
     {
         $request->validate([
@@ -142,6 +141,53 @@ class PackageController extends Controller
         ]);
     }
 
+    public function show_collect_package(Request $request)
+    {
+        return view('public.client.packages.package_collect');
+    }
+
+    public function collect_package(Request $request)
+    {
+        $validated = $request->validate([
+            'receiver_phone' => ['required', 'string'],
+            'unlock_code'    => ['required', 'digits:6'],
+        ]);
+
+        // 1. Find the matching package
+        $package = Package::with('stash')
+            ->where('receiver_phone', $validated['receiver_phone'])
+            ->where('unlock_code',   $validated['unlock_code'])
+            ->where('status', '!=', 'collected')
+            ->first();
+
+        if (! $package) {
+            return back()->withErrors(['unlock_code' => 'Invalid phone or unlock code.'])
+                ->withInput();
+        }
+
+        // 2. Ensure the package is in its destination postmat stash
+        $stash = $package->stash;                 // may be null
+        $inDestination = $stash
+            && $stash->postmat_id == $package->destination_postmat_id
+            && $stash->is_package_in;
+
+        if (! $inDestination) {
+            return back()->withErrors([
+                'unlock_code' => 'Package is not yet available at the destination postmat.',
+            ])->withInput();
+        }
+
+        // 3. Mark package as collected and clear the stash
+        $package->update([
+            'collected_date' => now(),
+            'status'         => 'collected',
+        ]);
+
+        $stash->clearReservation();
+
+        return redirect()->route('client.package.collected');
+    }
+
     # TODO if user is logged in, then show diffrent page with function to open the stash.
     public function track(Request $request)
     {
@@ -184,6 +230,7 @@ class PackageController extends Controller
             'not_exist' => false,
             'maskedEmail' => $maskedEmail,
             'maskedPhone' => $maskedPhone,
+            'package' => $package,
         ]);
     }
 
