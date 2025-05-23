@@ -142,7 +142,7 @@ class PackageController extends Controller
             'current_warehouse_id' => $current,
             'next_warehouse_id' => $next,
             'message' => 'in_warehouse',
-            'last_courier_id' => 1879,
+            'last_courier_id' => auth()->id(),
             'created_at' => now(),
         ]);
 
