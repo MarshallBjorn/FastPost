@@ -22,6 +22,9 @@
                                 Reciever Phone: <strong>{{ $maskedPhone }}</strong>
                             </p>
                         @endif
+                        <p class="text-gray-700 text-md">
+                            Package status: <strong>{{ $package->status }}</strong>
+                        </p>
                     </div>
                 @endif
 
@@ -88,7 +91,7 @@
                     .addTo(map)
                     .bindPopup(
                         "<strong>{{ $postmat->name }}</strong><br>{{ $postmat->city }}, {{ $postmat->{'post-code'} }}"
-                        )
+                    )
                     .openPopup();
             });
         </script>

@@ -135,6 +135,7 @@
                         class="w-48 h-48 border p-2 rounded-lg">
                     <p class="mt-2 text-sm text-gray-500">  Scan this QR code to track your package, or access the tracking page using the link below.</p>
                     <a href="{{ $trackUrl }}" class="text-blue-500 mt-2">{{ $trackUrl }}</a>
+                    <p class="mt-2 text-sm text-gray-500">To put package in stash go to: <a href="{{ route('client.packages') }}" class="text-blue-500">Your parcels</a></p>
                 </div>
 
                 <!-- Actions -->

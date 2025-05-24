@@ -11,6 +11,7 @@ use App\Models\Actualization;
 use Endroid\QrCode\QrCode;
 use App\Models\Stash;
 use App\Utils\DistanceUtils;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class PackageController extends Controller
@@ -139,6 +140,66 @@ class PackageController extends Controller
             'distance' => $distance ?? null,
             'trackUrl' => $track_url,
         ]);
+    }
+
+    public function show_user_packages(Request $request)
+    {
+        // Get user from the request, 
+        // show him all his packages,
+
+        $user = Auth::user();
+
+        $packages = Package::where('sender_id', $user->id)
+            ->with(['startPostmat', 'destinationPostmat', 'actualizations'])
+            ->get();
+
+        return view('public.client.packages.index', compact('packages'));
+    }
+
+
+    public function put_package_in_postmat(Request $request)
+    {
+        $data = $request->validate([
+            'package_id' => 'required|exists:packages,id',
+        ]);
+
+        $package = Package::with('startPostmat.stashes')->findOrFail($data['package_id']);
+
+        // Basic authorisation
+        if ($package->sender_id !== Auth::id()) {
+            abort(403, 'You are not allowed to modify this package.');
+        }
+
+        // Guard against double-clicks
+        if ($package->status !== 'registered') {
+            return back()->with('error', 'Package is already in transit.');
+        }
+
+        // Find a free stash of the right size in the *start* postmat
+        $stash = Stash::where('package_id', $package->id)
+            ->where('is_package_in', false)
+            ->first();
+
+        if (!$stash) {
+            return back()->with('error', 'No reserved stash found or package already placed.');
+        }
+
+        // Do everything atomically
+        DB::transaction(function () use ($package, $stash) {
+            // 1. Update status of package
+            $package->update(['status' => 'in_transit']);
+
+            // 2. Confirm reservation of package.
+            $stash->update(['is_package_in' => true]);
+
+            // 3. add tracking event
+            // Actualization::create([
+            //     'package_id' => $package->id,
+            //     'message'    => 'in_transit',
+            // ]);
+        });
+
+        return back()->with('success', 'Package placed in the locker and marked as in transit.');
     }
 
     public function show_collect_package(Request $request)

@@ -69,8 +69,10 @@ Route::prefix('warehouse')->middleware(['auth', 'verified', 'role:warehouse'])->
 
 // Client routes
 Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/client/packages/', [App\Http\Controllers\Client\PackageController::class, 'show_user_packages'])->name('client.packages');
     Route::get('/client/packages/send_package', [App\Http\Controllers\Client\PackageController::class, 'showForm'])->name('client.send_package');
     Route::post('/client/packages/send_package', [App\Http\Controllers\Client\PackageController::class, 'send_package'])->name('client.send_package.submit');
+    Route::post('/client/packages/put_package_in_postmat', [App\Http\Controllers\Client\PackageController::class, 'put_package_in_postmat'])->name('client.put_package_in_postmat');
 });
 
 Route::get('/track', [App\Http\Controllers\Client\PackageController::class, 'track'])->name('package.lookup');
