@@ -26,7 +26,7 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return redirect('verification.notice');
+        return redirect()->route('verification.notice');
     }
 
     public function login(Request $request)
