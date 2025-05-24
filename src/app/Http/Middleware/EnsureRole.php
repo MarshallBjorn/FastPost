@@ -12,9 +12,9 @@ class EnsureRole
     {
         $user = Auth::user();
 
-        // if (!$user || !in_array($user->staff->staff_type, $roles)) {
-        //     return redirect()->route('dashboard')->with('auth_required', 'You do not have permission to access this area.');
-        // }
+        if (!$user || !in_array($user->staff->staff_type, $roles)) {
+            return redirect()->route('dashboard')->with('auth_required', 'You do not have permission to access this area.');
+        }
 
         return $next($request);
     }
