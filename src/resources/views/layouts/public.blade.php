@@ -30,6 +30,7 @@
                 <a href="{{ route('public.postmats.index') }}" class="text-gray-700 hover:text-blue-600 transition">Browse Postmats</a>
                 <a href="{{ route('client.send_package') }}" class="text-gray-700 hover:text-blue-600 transition">Send a parcel</a>
                 <a href="{{ route('client.collect_package') }}" class="text-gray-700 hover:text-blue-600 transition">Collect a parcel</a>
+                <a href="{{ route('client.packages') }}" class="text-gray-700 hover:text-blue-600 transition">Your parcels</a>
                 @auth
                     <form action="{{ route('logout') }}" method="POST" class="inline">
                         @csrf
