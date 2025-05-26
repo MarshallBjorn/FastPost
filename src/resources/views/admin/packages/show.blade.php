@@ -85,63 +85,102 @@
         </table>
     @endif
 
-    @php
-        $routePath = $package->route_path; // [1,2,3,4]
-        $routeRemaining = $package->route_remaining; // [3,4]
-        $warehouseData = $warehouses->keyBy('id');
-        
-        $traveled = array_diff($routePath, $routeRemaining);
-        $traveledCoords = array_map(function($id) use ($warehouseData) {
-            return [$warehouseData[$id]->latitude, $warehouseData[$id]->longitude];
-        }, $traveled);
+@php
+    $warehouseData = collect($warehouses)->keyBy('id');
 
-        $remainingCoords = array_map(function($id) use ($warehouseData) {
-            return [$warehouseData[$id]->latitude, $warehouseData[$id]->longitude];
-        }, $routeRemaining);
-    @endphp
+    $routePath = $routePath ?? [];
+    $routeRemaining = $routeRemaining ?? [];
 
+    $traveled = array_diff($routePath, $routeRemaining);
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const map = L.map('map');
+    $traveledCoords = array_map(function($id) use ($warehouseData) {
+        return isset($warehouseData[$id])
+            ? [$warehouseData[$id]->latitude, $warehouseData[$id]->longitude]
+            : null;
+    }, $traveled);
 
-            const traveledCoords = @json(array_values($traveledCoords));
-            const remainingCoords = @json(array_values($remainingCoords));
+    $currentWarehouseId = $package->latestActualization->current_warehouse_id ?? null;
 
-            const allCoords = traveledCoords.concat(remainingCoords);
+    if ($currentWarehouseId && isset($warehouseData[$currentWarehouseId])) {
+        $currentCoord = [
+            $warehouseData[$currentWarehouseId]->latitude,
+            $warehouseData[$currentWarehouseId]->longitude
+        ];
 
-            if (allCoords.length > 0) {
-                map.setView(allCoords[0], 6);
-            }
+        // ✅ Append current warehouse to traveled path
+        $traveledCoords[] = $currentCoord;
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
-            }).addTo(map);
+        // ✅ Prepend it to remaining as well to connect the lines smoothly
+        array_unshift($routeRemaining, $currentWarehouseId);
+    }
 
-            if (traveledCoords.length > 1) {
-                L.polyline(traveledCoords, { color: 'green' }).addTo(map)
-                    .bindPopup("Traveled Path");
-            }
+    // ✅ Remaining path now starts from current → next → ...
+    $remainingCoords = array_map(function($id) use ($warehouseData) {
+        return isset($warehouseData[$id])
+            ? [$warehouseData[$id]->latitude, $warehouseData[$id]->longitude]
+            : null;
+    }, $routeRemaining);
 
-            if (remainingCoords.length > 1) {
-                L.polyline(remainingCoords, { color: 'orange', dashArray: '5,10' }).addTo(map)
-                    .bindPopup("Remaining Path");
-            }
+    $markerPoints = array_map(function($id) use ($warehouseData) {
+        return isset($warehouseData[$id])
+            ? [
+                'coords' => [$warehouseData[$id]->latitude, $warehouseData[$id]->longitude],
+                'city' => $warehouseData[$id]->city
+            ]
+            : null;
+    }, $routePath);
 
-            // Optional markers
-            allCoords.forEach((coord, idx) => {
-                L.circleMarker(coord, {
-                    radius: 6,
-                    color: 'blue',
-                    fillOpacity: 0.7
-                }).addTo(map);
-            });
+    $traveledCoords = array_values(array_filter($traveledCoords));
+    $remainingCoords = array_values(array_filter($remainingCoords));
+    $markerPoints = array_filter($markerPoints);
+@endphp
 
-            if (allCoords.length > 0) {
-                const bounds = L.latLngBounds(allCoords);
-                map.fitBounds(bounds, { padding: [20, 20] });
-            }
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const map = L.map('map');
+
+        const traveledCoords = @json($traveledCoords);
+        const remainingCoords = @json($remainingCoords);
+        const markerPoints = @json(array_values($markerPoints));
+
+        const allCoords = traveledCoords.concat(remainingCoords);
+
+        if (allCoords.length > 0) {
+            map.setView(allCoords[0], 6);
+        }
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        if (traveledCoords.length > 1) {
+            L.polyline(traveledCoords, {
+                color: 'green',
+                weight: 5
+            }).addTo(map).bindPopup('Traveled Path');
+        }
+
+        if (remainingCoords.length > 1) {
+            L.polyline(remainingCoords, {
+                color: 'orange',
+                dashArray: '5, 10',
+                weight: 5
+            }).addTo(map).bindPopup('Remaining Path');
+        }
+
+        markerPoints.forEach(point => {
+            L.circleMarker(point.coords, {
+                radius: 6,
+                color: 'blue',
+                fillOpacity: 0.8
+            }).addTo(map).bindTooltip(point.city);
         });
-    </script>
+
+        if (allCoords.length > 0) {
+            const bounds = L.latLngBounds(allCoords);
+            map.fitBounds(bounds, { padding: [20, 20] });
+        }
+    });
+</script>
 </div>
 @endsection

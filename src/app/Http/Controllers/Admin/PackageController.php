@@ -84,12 +84,17 @@ class PackageController extends Controller
     }
 
     public function show(Package $package)
-    {
-        $package->load('actualizations');
-        $warehouses = Warehouse::whereIn('id', $package->route_path)->get(['id', 'latitude', 'longitude', 'name']);
-        
-        return view('admin.packages.show', compact('package', 'warehouses'));
-    }
+{
+    $package->load('latestActualization');
+
+    $routePath = json_decode($package->route_path, true) ?? [];
+
+    $routeRemaining = json_decode(optional($package->latestActualization)->route_remaining, true) ?? [];
+
+    $warehouses = Warehouse::whereIn('id', $routePath)->get(['id', 'latitude', 'longitude', 'city']);
+
+    return view('admin.packages.show', compact('package', 'warehouses', 'routePath', 'routeRemaining'));
+}
 
     public function edit(Package $package)
     {
