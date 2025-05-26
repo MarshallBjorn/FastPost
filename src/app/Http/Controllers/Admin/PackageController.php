@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Package;
 use App\Models\User;
 use App\Models\Postmat;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Illuminate\Auth\Events\Validated;
 use App\Models\Actualization;
 
 class PackageController extends Controller
@@ -84,11 +84,17 @@ class PackageController extends Controller
     }
 
     public function show(Package $package)
-    {
-        $package->load('actualizations');
-        
-        return view('admin.packages.show', compact('package'));
-    }
+{
+    $package->load('latestActualization');
+
+    $routePath = json_decode($package->route_path, true) ?? [];
+
+    $routeRemaining = json_decode(optional($package->latestActualization)->route_remaining, true) ?? [];
+
+    $warehouses = Warehouse::whereIn('id', $routePath)->get(['id', 'latitude', 'longitude', 'city']);
+
+    return view('admin.packages.show', compact('package', 'warehouses', 'routePath', 'routeRemaining'));
+}
 
     public function edit(Package $package)
     {
@@ -118,5 +124,36 @@ class PackageController extends Controller
     {
         $package->delete();
         return redirect()->route('packages.index')->with('success', 'Package deleted.');
+    }
+
+    public function advancePackage(Package $package) {
+        $latest = $package->latestActualization;
+        $route = json_decode($latest->route_remaining, true);
+
+        if(empty($route)) {
+            Actualization::create([
+                'package_id' => $package->id,
+                'route_remaining' => [],
+                'current_warehouse_id' => null,
+                'message' => 'in_delivery'
+            ]);
+            return;
+        }
+
+        $current = array_shift($route);
+        $next = $route[0] ?? null;
+
+        Actualization::create([
+            'package_id' => $package->id,
+            'route_remaining' => json_encode($route),
+            'current_warehouse_id' => $current,
+            'next_warehouse_id' => $next,
+            'message' => 'in_warehouse',
+            'last_courier_id' => auth()->id(),
+            'created_at' => now(),
+        ]);
+
+        return redirect()->route('packages.index')
+                         ->with('success', 'Package advanced along its route');
     }
 }

@@ -25,6 +25,7 @@ class Package extends Model
         'size',
         'weight',
         'unlock_code',
+        'route_path'
     ];
 
     protected static function boot()
@@ -67,5 +68,10 @@ class Package extends Model
     public function actualizations()
     {
         return $this->hasMany(Actualization::class)->orderBy('created_at', 'asc');
+    }
+
+    public function latestActualization()
+    {
+        return $this->hasOne(Actualization::class)->latestOfMany();
     }
 }

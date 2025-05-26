@@ -15,6 +15,9 @@ class Actualization extends Model
 
     protected $fillable = [
         'package_id',
+        'route_remaining',
+        'current_warehouse_id',
+        'next_warehouse_id',
         'message',
         'last_courier_id',
         'created_at'
@@ -28,8 +31,11 @@ class Actualization extends Model
         return $this->belongsTo(User::class, 'last_courier_id');
     }
 
-    public function lastWareHouse()
-    {
-        return $this->belongsTo(Warehouse::class,'last_warehouse_id');
+    public function currentWarehouse() {
+        return $this->belongsTo(Warehouse::class, 'current_warehouse_id');
+    }
+
+    public function nextWarehouse() {
+        return $this->belongsTo(Warehouse::class, 'next_warehouse_id');
     }
 }

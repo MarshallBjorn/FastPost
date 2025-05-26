@@ -41,6 +41,10 @@
                 @endforeach
             </tbody>
         </table>
+        <!-- Pagination -->
+        <div class="mt-6">
+            {{ $postmats->withQueryString()->links() }}
+        </div>
     </div>
 </div>
 @endsection

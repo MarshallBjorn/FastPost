@@ -49,6 +49,9 @@ Route::prefix('admin')->middleware(['auth', 'verified', 'role:admin'])->group(fu
     Route::resource('stashes', App\Http\Controllers\Admin\StashController::class);
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
 
+    Route::post('packages/{package}/advance', [App\Http\Controllers\Admin\PackageController::class, 'advancePackage'])
+        ->name('packages.advance');
+
     Route::get('postmats/{postmat}/stashes', [App\Http\Controllers\Admin\StashController::class, 'index'])->name('stashes.index');
     Route::get('postmats/{postmat}/stashes/create', [App\Http\Controllers\Admin\StashController::class, 'create'])->name('stashes.create');
     Route::get('postmats/stashes/edit/{stash}', [App\Http\Controllers\Admin\StashController::class, 'edit'])->name('stashes.edit');

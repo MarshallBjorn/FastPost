@@ -46,6 +46,10 @@
                     <td class="py-2 px-8">{{ $package->delivered_at ? $package->delivered_at : '-' }}</td>
                     <td class="py-2 px-8">{{ $package->collected_at ? $package->collected_at : '-' }}</td>
                     <td class="py-2 px-8">
+                        <form action="{{ route('packages.advance', $package) }}" method="POST" class="inline">
+                            @csrf
+                            <button class="text-cyan-500">Advance</button>
+                        </form>
                         <a href="{{ route('packages.show', $package) }}" class="text-blue-500">View</a> |
                         <a href="{{ route('packages.edit', $package) }}" class="text-yellow-500">Edit</a> |
                         <form action="{{ route('packages.destroy', $package) }}" method="POST" class="inline">
