@@ -22,13 +22,13 @@ class Actualization extends Model
         'last_courier_id',
         'created_at'
     ];
-    
+
     public function package() {
         return $this->belongsTo(Package::class, 'package_id');
     }
 
     public function courier() {
-        return $this->belongsTo(Staff::class, 'last_courier_id');
+        return $this->belongsTo(User::class, 'last_courier_id');
     }
 
     public function currentWarehouse() {

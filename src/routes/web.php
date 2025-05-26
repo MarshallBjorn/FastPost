@@ -39,7 +39,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Admin routes
-Route::prefix('admin')->middleware('is_admin')->group(function () {
+Route::prefix('admin')->middleware(['auth', 'verified', 'role:admin'])->group(function () {
     Route::get('/', [App\Http\Controllers\Admin\AdminController::class, 'index'])->name('admin.dashboard');
 
     Route::resource('packages', App\Http\Controllers\Admin\PackageController::class);
@@ -62,10 +62,22 @@ Route::prefix('admin')->middleware('is_admin')->group(function () {
 });
 
 // Public package routes (client)
-Route::middleware(['auth'])->group(function () {
+Route::prefix('delivery')->middleware(['auth', 'verified', 'role:delivery'])->group(function () {
+    Route::get('/', [App\Http\Controllers\Admin\WarehouseController::class, 'index'])->name('warehouse.dashboard');
+});
+
+Route::prefix('warehouse')->middleware(['auth', 'verified', 'role:warehouse'])->group(function () {
+    Route::get('/', [App\Http\Controllers\Admin\WarehouseController::class, 'index'])->name('warehouse.dashboard');
+});
+
+// Client routes
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/client/packages/', [App\Http\Controllers\Client\PackageController::class, 'show_user_packages'])->name('client.packages');
     Route::get('/client/packages/send_package', [App\Http\Controllers\Client\PackageController::class, 'showForm'])->name('client.send_package');
     Route::post('/client/packages/send_package', [App\Http\Controllers\Client\PackageController::class, 'send_package'])->name('client.send_package.submit');
+    Route::post('/client/packages/put_package_in_postmat', [App\Http\Controllers\Client\PackageController::class, 'put_package_in_postmat'])->name('client.put_package_in_postmat');
 });
+
 Route::get('/track', [App\Http\Controllers\Client\PackageController::class, 'track'])->name('package.lookup');
 
 Route::get('/client/packages/collect', [App\Http\Controllers\Client\PackageController::class, 'show_collect_package'])->name('client.collect_package');

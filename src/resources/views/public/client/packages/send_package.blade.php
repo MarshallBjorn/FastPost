@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="max-w-md mx-auto mt-10 bg-white p-6 rounded shadow">
-    <h2 class="text-2xl font-bold mb-4">Send parcel</h2>
+    <h2 class="text-2xl font-bold mb-4">Send a parcel</h2>
     <form action="{{ route('client.send_package.submit') }}" method="POST">
         @csrf
 
@@ -24,11 +24,11 @@
         @endif
 
         <div class="mb-4">
-            <label for="email" class="block text-sm font-medium">E-mail receiver</label>
+            <label for="email" class="block text-sm font-medium">Receiver's Email</label>
             <input type="email" name="email" id="email" class="form-select w-full rounded-md border border-gray-300 shadow-sm px-3 py-2" required>
         </div>
         <div class="mb-4">
-            <label for="phone" class="block text-sm font-medium">Contact number of receiver</label>
+            <label for="phone" class="block text-sm font-medium">Receiver's Phone Number</label>
             <input type="text" name="phone" id="phone" class="form-select w-full rounded-md border border-gray-300 shadow-sm px-3 py-2" required>
         </div>
 
@@ -38,7 +38,7 @@
         </div>
 
         <div class="mb-4">
-            <label for="size" class="block text-sm font-medium">Weight in grams</label>
+            <label for="size" class="block text-sm font-medium">Package Size</label>
             <select name="size" id="size" class="form-select w-full rounded-md border border-gray-300 shadow-sm px-3 py-2" required>
                 <option value="">Select Size</option>
                 <option value="S">S</option>
@@ -48,7 +48,7 @@
         </div>
 
         <div class="mb-4">
-            <label for="start_postmat" class="block text-sm font-medium">Start Postmat (Sender)</label>
+            <label for="start_postmat" class="block text-sm font-medium">Initial Postmat (Sender)</label>
             <input type="text" name="start_postmat" id="start_postmat" class="form-select w-full rounded-md border border-gray-300 shadow-sm px-3 py-2" required>
         </div>
 
