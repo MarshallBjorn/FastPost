@@ -45,6 +45,8 @@
         </div>
     </div>
 
+    <h2 class="text-2xl font-bold mb-4">Package Route</h2>
+    <div id="map" class="w-full h-96 mb-6 rounded border"></div>
 
     <h1 class="text-2xl font-bold mb-4">Actualizations</h1>
     @if ($package->actualizations->isEmpty())
@@ -83,5 +85,63 @@
         </table>
     @endif
 
+    @php
+        $routePath = $package->route_path; // [1,2,3,4]
+        $routeRemaining = $package->route_remaining; // [3,4]
+        $warehouseData = $warehouses->keyBy('id');
+        
+        $traveled = array_diff($routePath, $routeRemaining);
+        $traveledCoords = array_map(function($id) use ($warehouseData) {
+            return [$warehouseData[$id]->latitude, $warehouseData[$id]->longitude];
+        }, $traveled);
+
+        $remainingCoords = array_map(function($id) use ($warehouseData) {
+            return [$warehouseData[$id]->latitude, $warehouseData[$id]->longitude];
+        }, $routeRemaining);
+    @endphp
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const map = L.map('map');
+
+            const traveledCoords = @json(array_values($traveledCoords));
+            const remainingCoords = @json(array_values($remainingCoords));
+
+            const allCoords = traveledCoords.concat(remainingCoords);
+
+            if (allCoords.length > 0) {
+                map.setView(allCoords[0], 6);
+            }
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            if (traveledCoords.length > 1) {
+                L.polyline(traveledCoords, { color: 'green' }).addTo(map)
+                    .bindPopup("Traveled Path");
+            }
+
+            if (remainingCoords.length > 1) {
+                L.polyline(remainingCoords, { color: 'orange', dashArray: '5,10' }).addTo(map)
+                    .bindPopup("Remaining Path");
+            }
+
+            // Optional markers
+            allCoords.forEach((coord, idx) => {
+                L.circleMarker(coord, {
+                    radius: 6,
+                    color: 'blue',
+                    fillOpacity: 0.7
+                }).addTo(map);
+            });
+
+            if (allCoords.length > 0) {
+                const bounds = L.latLngBounds(allCoords);
+                map.fitBounds(bounds, { padding: [20, 20] });
+            }
+        });
+    </script>
 </div>
 @endsection

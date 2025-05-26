@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Package;
 use App\Models\User;
 use App\Models\Postmat;
+use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Actualization;
@@ -85,8 +86,9 @@ class PackageController extends Controller
     public function show(Package $package)
     {
         $package->load('actualizations');
+        $warehouses = Warehouse::whereIn('id', $package->route_path)->get(['id', 'latitude', 'longitude', 'name']);
         
-        return view('admin.packages.show', compact('package'));
+        return view('admin.packages.show', compact('package', 'warehouses'));
     }
 
     public function edit(Package $package)
