@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\PackageSize;
+use App\Enums\PackageStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -27,6 +29,14 @@ class Package extends Model
         'unlock_code',
         'route_path'
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'size' => PackageSize::class,
+            'status' => PackageStatus::class,
+        ];
+    }
 
     protected static function boot()
     {
@@ -73,5 +83,20 @@ class Package extends Model
     public function latestActualization()
     {
         return $this->hasOne(Actualization::class)->latestOfMany();
+    }
+
+    public function getDeliveredDate(): string
+    {
+        return $this->delivered_date ? $this->delivered_date->format('d M Y, H:i') : 'N/A';
+    }
+
+    public function getCollectedDate(): string
+    {
+        return $this->collected_date ? $this->collected_date->format('d M Y, H:i') : 'N/A';
+    }
+
+    public function getUnlockCode(): string
+    {
+        return $this->unlock_code ?? 'N/A';
     }
 }

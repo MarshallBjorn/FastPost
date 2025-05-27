@@ -1,7 +1,7 @@
 @extends('layouts.public') {{-- Assuming 'layouts.app' is your logged-in layout --}}
 
 @section('content')
-<div class="min-h-[70vh] flex items-center justify-center bg-gray-100 py-12 px-4">
+<div class="min-h-[70vh] flex items-center justify-center py-12 px-4">
     <div class="bg-white shadow-xl rounded-xl p-8 max-w-4xl w-full space-y-6">
         <h1 class="text-3xl font-bold text-center text-blue-800">Detailed Package Tracking</h1>
 
@@ -25,18 +25,18 @@
                 </div>
                 <div>
                     <h2 class="font-semibold text-blue-700 mb-1">Package Details</h2>
-                    <p><strong>Status:</strong> {{ ucfirst($package->status) }}</p>
-                    <p><strong>Size:</strong> {{ $package->size }}</p>
+                    <p><strong>Status:</strong> {{ $package->status->label() }}</p>
+                    <p><strong>Size:</strong> {{ $package->size->label() }}</p>
                     <p><strong>Weight:</strong> {{ $package->weight }} g</p>
-                    <p><strong>Unlock Code:</strong> {{ $package->unlock_code }}</p>
+                    <p><strong>Unlock Code:</strong> {{ $package->getUnlockCode() }}</p>
                 </div>
                 <div>
                     <h2 class="font-semibold text-blue-700 mb-1">Dates</h2>
                     <p><strong>Sent At:</strong> {{ optional($package->created_at)->format('d M Y, H:i') }}</p>
-                    <p><strong>Delivered:</strong> {{ optional($package->delivered_date)->format('d M Y, H:i') }}</p>
-                    <p><strong>Collected:</strong> {{ optional($package->collected_date)->format('d M Y, H:i') }}</p>
+                    <p><strong>Delivered:</strong> {{ $package->getDeliveredDate() }}</p>
+                    <p><strong>Collected:</strong> {{ $package->getCollectedDate() }}</p>
                 </div>
-                <div>
+                <div>   
                     <h2 class="font-semibold text-blue-700 mb-1">Postmats</h2>
                     <p><strong>Start:</strong> {{ $package->startPostmat?->name }} ({{ $package->startPostmat?->city }})</p>
                     <p><strong>Destination:</strong> {{ $package->destinationPostmat?->name }} ({{ $package->destinationPostmat?->city }})</p>
