@@ -12,7 +12,7 @@ Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('ho
 // Authentication: Guests only
 Route::middleware('guest')->group(function () {
     Route::view('/login', 'auth.login')->name('auth');
-    Route::post('/login', [AuthController::class, 'login'])->name('login');
+    Route::post('/login', action: [AuthController::class, 'login'])->name('login');
     Route::post('/register', [AuthController::class, 'register'])->name('register');
 });
 
@@ -34,7 +34,6 @@ Route::middleware('auth')->group(function () {
 // Authenticated routes
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
     Route::get('/dashboard', [App\Http\Controllers\HomeController::class, 'index'])->middleware('verified')->name('dashboard');
 });
 

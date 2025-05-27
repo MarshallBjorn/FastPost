@@ -269,14 +269,19 @@ class PackageController extends Controller
         return redirect()->route('client.package.collected');
     }
 
-    # TODO if user is logged in, then show diffrent page with function to open the stash.
     public function track(Request $request)
     {
         $request->validate([
             'code' => 'required|integer',
         ]);
 
-        $package = Package::with('actualizations', 'destinationPostmat')->find($request->code);
+        $package = Package::with([
+            'actualizations',
+            'destinationPostmat',
+            'startPostmat',
+            'sender',
+            'receiver'
+        ])->find($request->code);
 
         if (!$package) {
             return view('public.client.packages.package_track', [
@@ -289,7 +294,6 @@ class PackageController extends Controller
             ]);
         }
 
-        // Fallback dummy if no actualizations yet
         $actualizations = $package->actualizations;
         $postmat = $package->destinationPostmat;
 
@@ -302,6 +306,20 @@ class PackageController extends Controller
             ]);
         }
 
+        // If user is logged in and is the sender or receiver, show full details
+        if (auth()->check() && (
+            auth()->id() === $package->sender_id ||
+            auth()->id() === $package->receiver_id
+        )) {
+            return view('public.client.packages.package_track_auth', [
+                'package' => $package,
+                'actualizations' => $actualizations,
+                'postmat' => $postmat,
+                'not_exist' => false,
+            ]);
+        }
+
+        // Otherwise show public version with masked data
         $maskedEmail = $this->maskEmail($package->receiver_email);
         $maskedPhone = $this->maskPhone($package->receiver_phone);
 

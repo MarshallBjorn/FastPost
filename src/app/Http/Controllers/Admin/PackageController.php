@@ -133,9 +133,10 @@ class PackageController extends Controller
         if(empty($route)) {
             Actualization::create([
                 'package_id' => $package->id,
-                'route_remaining' => [],
+                'route_remaining' => json_encode([]),
                 'current_warehouse_id' => null,
-                'message' => 'in_delivery'
+                'message' => 'in_delivery',
+                'created_at' => now(),
             ]);
             return;
         }
