@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('staff', function (Blueprint $table) {
             $table->unsignedBigInteger('user_id')->primary();
-            $table->enum('staff_type', ['admin', 'courier', 'warehouse']);
+            $table->enum('staff_type', ['admin', 'postmat_courier', 'warehouse_courier', 'warehouse']);
             $table->unsignedBigInteger('warehouse_id')->nullable();
             $table->dateTime('hire_date');
             $table->dateTime('termination_date')->nullable();

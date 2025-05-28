@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\Delivery\PostmatRouteController;
+use App\Http\Controllers\Delivery\RouteController;
+use App\Http\Controllers\Delivery\WarehouseRouteController;
 use App\Http\Controllers\PostmatPublicController;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
@@ -48,7 +51,7 @@ Route::prefix('admin')->middleware(['auth', 'verified', 'role:admin'])->group(fu
     Route::resource('stashes', App\Http\Controllers\Admin\StashController::class);
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
 
-    Route::post('packages/{package}/advance', [App\Http\Controllers\Admin\PackageController::class, 'advancePackage'])
+    Route::post('packages/{package}/advance', [App\Http\Controllers\Admin\PackageController::class, 'advancePackageRedirect'])
         ->name('packages.advance');
 
     Route::get('postmats/{postmat}/stashes', [App\Http\Controllers\Admin\StashController::class, 'index'])->name('stashes.index');
@@ -60,9 +63,13 @@ Route::prefix('admin')->middleware(['auth', 'verified', 'role:admin'])->group(fu
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
 });
 
-// Public package routes (client)
-Route::prefix('delivery')->middleware(['auth', 'verified', 'role:delivery'])->group(function () {
-    Route::get('/', [App\Http\Controllers\Admin\WarehouseController::class, 'index'])->name('warehouse.dashboard');
+Route::prefix('warehouse')->middleware(['auth', 'verified', 'role:warehouse_courier'])->group(function () {
+    Route::get('/delivery', [WarehouseRouteController::class, 'index'])->name('warehouse.delivery.index');
+    Route::post('/take/{from}/{to}', [WarehouseRouteController::class, 'takeOrder'])->name('warehouse.delivery.take');
+});
+
+Route::prefix('postmat')->middleware(['auth', 'verified', 'role:postmat_courier'])->group(function () {
+    Route::get('/delivery', [PostmatRouteController::class, 'index'])->name('postmat.delivery.index');
 });
 
 Route::prefix('warehouse')->middleware(['auth', 'verified', 'role:warehouse'])->group(function () {

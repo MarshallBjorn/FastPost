@@ -41,12 +41,12 @@ class UserFactory extends Factory
         return $this->afterCreating(function (User $user) {
             // 70% chance this user becomes staff
             if (fake()->boolean(70)) {
-                $staffType = fake()->randomElement(['admin', 'courier', 'warehouse']);
+                $staffType = fake()->randomElement(['admin', 'postmat_courier', 'warehouse_courier', 'warehouse']);
 
                 Staff::create([
                     'user_id' => $user->id,
                     'staff_type' => $staffType,
-                    'warehouse_id' => $staffType === 'warehouse'
+                    'warehouse_id' => $staffType !== 'admin'
                         ? Warehouse::inRandomOrder()->first()?->id
                         : null,
                     'hire_date' => now()->subMonths(rand(1, 24)),

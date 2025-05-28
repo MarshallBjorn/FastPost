@@ -54,7 +54,7 @@
             <label>Staff Type</label>
             <select name="staff[staff_type]" class="form-input">
                 <option value="">-- None --</option>
-                @foreach(['admin', 'courier', 'warehouse'] as $type)
+                @foreach(['admin', 'postmat_courier', 'warehouse_courier', 'warehouse'] as $type)
                     <option value="{{ $type }}" {{ old('staff.staff_type') === $type ? 'selected' : '' }}>
                         {{ ucfirst($type) }}
                     </option>
