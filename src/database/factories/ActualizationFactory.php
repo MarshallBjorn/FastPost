@@ -17,11 +17,12 @@ class ActualizationFactory extends Factory
 
     public function definition(): array
     {
-        $courierStaff = Staff::where('staff_type', 'courier')->inRandomOrder()->first();
+        $courierStaff = Staff::where('staff_type', ['postmat_courier', 'warehouse_courier'])->inRandomOrder()->first();
 
         // If no courier staff exists, create one (and a linked user)
         if (!$courierStaff) {
-            $courierStaff = Staff::factory()->state(['staff_type' => 'courier'])->create();
+            $courierStaff = Staff::factory()->state(['staff_type' => 'postmat_courier'])->create();
+            $courierStaff = Staff::factory()->state(['staff_type' => 'warehouse_courier'])->create();
         }
 
         $package = Package::inRandomOrder()->first();

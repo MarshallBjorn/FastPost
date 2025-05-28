@@ -84,17 +84,17 @@ class PackageController extends Controller
     }
 
     public function show(Package $package)
-{
-    $package->load('latestActualization');
+    {
+        $package->load('latestActualization');
 
-    $routePath = json_decode($package->route_path, true) ?? [];
+        $routePath = json_decode($package->route_path, true) ?? [];
 
-    $routeRemaining = json_decode(optional($package->latestActualization)->route_remaining, true) ?? [];
+        $routeRemaining = json_decode(optional($package->latestActualization)->route_remaining, true) ?? [];
 
-    $warehouses = Warehouse::whereIn('id', $routePath)->get(['id', 'latitude', 'longitude', 'city']);
+        $warehouses = Warehouse::whereIn('id', $routePath)->get(['id', 'latitude', 'longitude', 'city']);
 
-    return view('admin.packages.show', compact('package', 'warehouses', 'routePath', 'routeRemaining'));
-}
+        return view('admin.packages.show', compact('package', 'warehouses', 'routePath', 'routeRemaining'));
+    }
 
     public function edit(Package $package)
     {
@@ -126,11 +126,12 @@ class PackageController extends Controller
         return redirect()->route('packages.index')->with('success', 'Package deleted.');
     }
 
-    public function advancePackage(Package $package) {
+    public function advancePackage(Package $package)
+    {
         $latest = $package->latestActualization;
         $route = json_decode($latest->route_remaining, true);
 
-        if(empty($route)) {
+        if (empty($route)) {
             Actualization::create([
                 'package_id' => $package->id,
                 'route_remaining' => json_encode([]),
@@ -153,8 +154,12 @@ class PackageController extends Controller
             'last_courier_id' => auth()->id(),
             'created_at' => now(),
         ]);
+    }
 
+    public function advancePackageRedirect(Package $package)
+    {
+        $this->advancePackage($package);
         return redirect()->route('packages.index')
-                         ->with('success', 'Package advanced along its route');
+            ->with('success', 'Package advanced along its route');
     }
 }
