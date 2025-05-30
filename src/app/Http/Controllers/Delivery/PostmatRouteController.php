@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Delivery;
 use App\Enums\PackageStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Actualization;
+use App\Models\Postmat;
 use App\Models\Package;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
@@ -14,44 +15,61 @@ class PostmatRouteController extends Controller
     public function index(Request $request)
     {
         $currentWarehouseId = auth()->user()->staff->warehouse_id;
+
+        // Get all registered packages
+        $packages = Package::where('status', 'registered')->get();
+
         $routes = [];
 
-        $packages = Package::where('status', ['registered', 'in_transit'])->get();
-
         foreach ($packages as $package) {
-            $path = json_decode($package->route_path, true);
-            if (!$path || count($path) < 2) continue;
+            $actualization = $package->latestActualization;
 
-            $start = $path[0];
-            $next = $path[1];
-
-            // Forward trip
-            if ($start == $currentWarehouseId) {
-                $key = "$start-$next";
-                if (!isset($routes[$key])) {
-                    $distance = $this->getDistanceBetween($start, $next);
-                    $routes[$key] = [
-                        'from' => Warehouse::find($start),
-                        'to' => Warehouse::find($next),
-                        'count' => 0,
-                        'return_count' => 0,
-                        'distance' => $distance,
-                    ];
-                }
-
-                $routes[$key]['count']++;
+            if (!$actualization || !$actualization->route_remaining) {
+                continue;
             }
 
-            // Return trip check
-            if ($next == $currentWarehouseId) {
-                $key = "$next-$start"; // Same as forward key reversed
-                if (isset($routes[$key])) {
-                    $routes[$key]['return_count']++;
-                }
+            $route = json_decode($actualization->route_remaining, true);
+
+            if (!is_array($route) || count($route) < 2) {
+                continue;
             }
+
+            $startPostmatId = $route[0];
+            $nextWarehouseId = $route[1];
+
+            // Only show packages being sent TO the current warehouse
+            if ($nextWarehouseId != $currentWarehouseId) {
+                continue;
+            }
+
+            // Don't filter by postmat's warehouse_id here
+            $postmat = Postmat::find($startPostmatId);
+
+            if (!$postmat) {
+                continue;
+            }
+
+            if (!isset($routes[$postmat->id])) {
+                $distance = \App\Utils\DistanceUtils::haversineDistance(
+                    $postmat->latitude,
+                    $postmat->longitude,
+                    $postmat->warehouse->latitude,
+                    $postmat->warehouse->longitude
+                );
+
+                $routes[$postmat->id] = [
+                    'postmat' => $postmat,
+                    'count' => 0,
+                    'distance' => $distance,
+                ];
+            }
+
+            $routes[$postmat->id]['count']++;
         }
 
-        return view('postmat.delivery.index', compact('routes', 'packages'));
+        return view('postmat.delivery.index', [
+            'routes' => $routes,
+        ]);
     }
 
     private function getDistanceBetween($fromId, $toId)

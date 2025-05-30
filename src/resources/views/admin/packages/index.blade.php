@@ -34,7 +34,7 @@
                     <td class="py-2 px-8">{{ $package->id }}</td>
                     <td class="py-2 px-8">{{ $package->sender->name ?? '-' }}</td>
                     <td class="py-2 px-8">{{ $package->receiver->name ?? '-' }}</td>
-                    <td class="py-2 px-8">{{ ucfirst($package->status) }}</td>
+                    <td class="py-2 px-8">{{ $package->status->label() }}</td>
                     <td>{{ $package->startPostmat->name ?? '-' }}</td>
                     <td>{{ $package->destinationPostmat->name ?? '-' }}</td>
                     <td class="py-2 px-8">{{ $package->receiver_email }}</td>
