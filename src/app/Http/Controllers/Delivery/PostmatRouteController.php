@@ -43,7 +43,9 @@ class PostmatRouteController extends Controller
             }
 
             // Don't filter by postmat's warehouse_id here
-            $postmat = Postmat::find($startPostmatId);
+            $postmat = Postmat::find($startPostmatId)
+                ->where('status', 'active')
+                ->first();
 
             if (!$postmat) {
                 continue;
