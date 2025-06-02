@@ -47,7 +47,7 @@
                                 </td>
                                 <td class="px-6 py-4">{{ $package->created_at->format('Y-m-d') }}</td>
                                 <td class="px-6 py-4">
-                                    @if ($package->status === 'registered')
+                                    @if ($package->status->value === 'registered')
                                         {{-- POST: put_package_in_postmat --}}
                                         <form action="{{ route('client.put_package_in_postmat') }}" method="POST"
                                             class="inline">
