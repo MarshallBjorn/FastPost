@@ -26,7 +26,11 @@
                 📦 FastPost
             </a>
             <nav class="space-x-4 text-sm font-medium">
-                <a href="{{ url('/admin') }}" class="text-gray-700 hover:text-blue-600 transition">Admin page</a>
+                @auth
+                    @if (auth()->user()->staff && auth()->user()->staff->staff_type === 'admin')
+                        <a href="{{ url('/admin') }}" class="text-gray-700 hover:text-blue-600 transition">Admin page</a>
+                    @endif
+                @endauth
                 <a href="{{ route('public.postmats.index') }}" class="text-gray-700 hover:text-blue-600 transition">Browse Postmats</a>
                 <a href="{{ route('client.send_package') }}" class="text-gray-700 hover:text-blue-600 transition">Send a parcel</a>
                 <a href="{{ route('client.collect_package') }}" class="text-gray-700 hover:text-blue-600 transition">Collect a parcel</a>

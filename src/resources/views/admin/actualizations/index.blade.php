@@ -5,7 +5,6 @@
 <div class="max-w-7xl mx-auto p-6">
     <div class="flex justify-between items-center mb-4">
         <h1 class="text-2xl font-bold">Actualizations</h1>
-        <a href="{{ route('actualizations.create') }}" class="form-submit px-4 py-2">+ New Actualization</a>
     </div>
 
     <div class="overflow-x-auto custom-white-shadow">
