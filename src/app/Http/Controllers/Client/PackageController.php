@@ -208,7 +208,7 @@ class PackageController extends Controller
         // Do everything atomically
         DB::transaction(function () use ($package, $stash) {
             // 1. Update status of package
-            $package->update(['status' => 'in_transit']);
+            // $package->update(['status' => 'registered']);
 
             // 2. Confirm reservation of package.
             $stash->update(['is_package_in' => true]);

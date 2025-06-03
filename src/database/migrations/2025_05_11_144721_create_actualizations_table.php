@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('actualizations', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('package_id');
-            $table->enum('message', ['sent', 'in_warehouse', 'in_delivery']);
+            $table->enum('message', ['sent', 'collected', 'in_warehouse', 'in_delivery']);
             $table->unsignedBigInteger('last_courier_id')->nullable();
             $table->unsignedBigInteger('last_warehouse_id')->nullable();
             $table->dateTime('created_at');
