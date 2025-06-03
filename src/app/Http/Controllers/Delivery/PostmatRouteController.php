@@ -16,8 +16,12 @@ class PostmatRouteController extends Controller
     {
         $currentWarehouseId = auth()->user()->staff->warehouse_id;
 
-        // Get all registered packages
-        $packages = Package::where('status', 'registered')->get();
+        // Get all registered packages that are heading to this warehouse
+        $packages = Package::where('status', PackageStatus::REGISTERED)
+            ->whereHas('latestActualization', function ($query) use ($currentWarehouseId) {
+                $query->whereNotNull('route_remaining');
+            })
+            ->get();
 
         $routes = [];
 
@@ -30,20 +34,19 @@ class PostmatRouteController extends Controller
 
             $route = json_decode($actualization->route_remaining, true);
 
-            if (!is_array($route) || count($route) < 2) {
+            if (!is_array($route) || count($route) < 1) {
                 continue;
             }
 
-            $startPostmatId = $route[0];
-            $nextWarehouseId = $route[1];
+            $nextWarehouseId = $route[0]; // Next step should be the delivery guy’s warehouse
 
-            // Only show packages being sent TO the current warehouse
+            // Ensure this package is being sent to current user's warehouse
             if ($nextWarehouseId != $currentWarehouseId) {
                 continue;
             }
 
-            // Don't filter by postmat's warehouse_id here
-            $postmat = Postmat::find($startPostmatId)
+            // Start postmat is now from the package field
+            $postmat = Postmat::where('id', $package->start_postmat_id)
                 ->where('status', 'active')
                 ->first();
 
@@ -73,6 +76,7 @@ class PostmatRouteController extends Controller
             'routes' => $routes,
         ]);
     }
+
 
     private function getDistanceBetween($fromId, $toId)
     {
