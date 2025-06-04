@@ -70,6 +70,7 @@ Route::prefix('warehouse')->middleware(['auth', 'verified', 'role:warehouse_cour
 
 Route::prefix('postmat')->middleware(['auth', 'verified', 'role:postmat_courier'])->group(function () {
     Route::get('/delivery', [PostmatRouteController::class, 'index'])->name('postmat.delivery.index');
+    Route::post('/take/{from}/{to}', [PostmatRouteController::class, 'takeOrder'])->name('postmat.delivery.take');
 });
 
 Route::prefix('warehouse')->middleware(['auth', 'verified', 'role:warehouse'])->group(function () {

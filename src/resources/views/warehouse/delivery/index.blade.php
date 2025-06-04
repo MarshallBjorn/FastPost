@@ -22,9 +22,13 @@
                     @csrf
                     @foreach ($packages as $package)
                         @php
-                            $path = json_decode($package->route_path, true);
+                            $latest = $package->latestActualization;
                         @endphp
-                        @if ($path && count($path) > 1 && $path[0] == $route['from']->id && $path[1] == $route['to']->id)
+                        @if (
+                            $latest &&
+                            $latest->current_warehouse_id == $route['from']->id &&
+                            $latest->next_warehouse_id == $route['to']->id
+                        )
                             <input type="hidden" name="packages[]" value="{{ $package->id }}">
                         @endif
                     @endforeach
