@@ -56,10 +56,12 @@ class WarehouseRouteController extends Controller
                         'count' => 0,
                         'return_count' => 0,
                         'distance' => $distance,
+                        'packages' => [],
                     ];
                 }
 
                 $routes[$key]['count']++;
+                $routes[$key]['packages'][] = $package;
             }
 
             // Return trip check
@@ -67,6 +69,7 @@ class WarehouseRouteController extends Controller
                 $key = "$next-$start"; // Same as forward key reversed
                 if (isset($routes[$key])) {
                     $routes[$key]['return_count']++;
+                    $routes[$key]['packages'][] = $package;
                 }
             }
         }

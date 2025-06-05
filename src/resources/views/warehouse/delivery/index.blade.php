@@ -20,17 +20,8 @@
                 <p><strong>Distance:</strong> {{ $route['distance'] ?? 'Unknown' }} km</p>
                 <form action="{{ route('warehouse.delivery.take', [$route['from']->id, $route['to']->id]) }}" method="POST" class="mt-3">
                     @csrf
-                    @foreach ($packages as $package)
-                        @php
-                            $latest = $package->latestActualization;
-                        @endphp
-                        @if (
-                            $latest &&
-                            $latest->current_warehouse_id == $route['from']->id &&
-                            $latest->next_warehouse_id == $route['to']->id
-                        )
-                            <input type="hidden" name="packages[]" value="{{ $package->id }}">
-                        @endif
+                    @foreach ($route['packages'] as $package)
+                        <input type="hidden" name="packages[]" value="{{ $package->id }}">
                     @endforeach
                     <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Take Order</button>
                 </form>
