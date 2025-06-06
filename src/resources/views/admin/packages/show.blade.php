@@ -67,7 +67,7 @@
                     <tr class="border-t-2 border-dotted p-1">
                         <td class="px-3">{{ $actualization->message }}</td>
                         <td class="px-3">{{ $actualization->courier?->id ?? 'N/A' }}</td>
-                        <td class="px-3">{{ $actualization->lastWareHouse?->name ?? 'N/A' }}</td>
+                        <td class="px-3">{{ $actualization->currentWarehouse?->city ?? 'N/A' }}</td>
                         <td class="px-3">{{ $actualization->created_at }}</td>
                         <td class="px-3">
                             <a href="{{ route('actualizations.show', $actualization) }}" class="text-blue-500">View</a> |
@@ -77,8 +77,6 @@
                                 <button onclick="return confirm('Delete?')" class="text-red-500">Delete</button>
                             </form>
                         </td>
-                        
-                        </form>
                     </tr>
                 @endforeach
             </tbody>

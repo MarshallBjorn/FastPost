@@ -48,7 +48,7 @@
 
         <div>
             <label>Last Warehouse ID</label>
-            <input type="number" name="last_warehouse_id" value="{{ old('last_warehouse_id', $actualization->last_warehouse_id) }}" class="form-input" placeholder="Warehouse ID (optional)">
+            <input type="number" name="last_warehouse_id" value="{{ old('last_warehouse_id', $actualization->current_warehouse_id) }}" class="form-input" placeholder="Warehouse ID (optional)">
         </div>
 
         <div>
