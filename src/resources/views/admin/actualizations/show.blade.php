@@ -22,7 +22,7 @@
 
         <div class="contents">
             <div class="font-semibold px-4 py-2">Current Warehouse:</div>
-            {{ $actualization->currentWarehouse?->name ?? 'N/A' }}
+            {{ $actualization->currentWarehouse?->city ?? 'N/A' }}
         </div>
 
         <div class="contents">
