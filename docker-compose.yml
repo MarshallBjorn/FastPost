@@ -85,6 +85,7 @@ services:
       - "5432:5432"
 
   composer:
+    user: "root"
     image: composer:2
     container_name: composer
     volumes:

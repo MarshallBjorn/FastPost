@@ -50,6 +50,13 @@ http://localhost:8000
   docker-compose exec app php artisan migrate:fresh
   docker-compose exec app php artisan db:seed
   ```
+
+  - When installing fakerphp fails (especially on Windows) then try:
+    ```
+    docker-compose run --rm composer require fakerphp/faker --dev
+    docker-compose exec app php artisan db:seed
+    ```
+
 ---
 
 **Notes**
