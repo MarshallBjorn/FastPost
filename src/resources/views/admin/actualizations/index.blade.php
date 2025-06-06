@@ -13,6 +13,7 @@
                 <tr class="text-center">
                     <th class="p-2 px-4">Package ID</th>
                     <th class="p-2 px-4">Message</th>
+                    <th class="p-2 px-4">Last Courier ID</th>
                     <th class="p-2 px-4">Created At</th>
                     <th class="p-2 px-4">Actions</th>
                 </tr>
@@ -22,6 +23,7 @@
                     <tr class="border-b text-center">
                         <td class="p-2 px-4">{{ $a->package_id }}</td>
                         <td class="p-2 px-4">{{ $a->message }}</td>
+                        <td class="p-2 px-4">{{ $a->courier?->id }}</td>
                         <td class="p-2 px-4">{{ $a->created_at }}</td>
                         <td class="p-2 px-4">
                             <a href="{{ route('actualizations.show', $a) }}" class="text-blue-500">View</a> |

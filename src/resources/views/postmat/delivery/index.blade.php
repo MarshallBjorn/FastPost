@@ -26,6 +26,13 @@
                         📦 <strong>{{ $route['count'] }}</strong> packages ready<br>
                         🧭 <strong>{{ number_format($route['distance'], 1) }} km</strong> from you
                     </p>
+                    <form action="{{ route('postmat.delivery.pickup', ['postmat' => $route['postmat']->id]) }}" method="POST" class="mt-4">
+                        @csrf
+                        <button type="submit"
+                            class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+                            Take All Packages
+                        </button>
+                    </form>
                 </div>
             @endforeach
         </div>

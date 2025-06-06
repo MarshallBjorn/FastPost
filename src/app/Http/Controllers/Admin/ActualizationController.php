@@ -43,4 +43,13 @@ class ActualizationController extends Controller
         $actualization->delete();
         return redirect()->route('actualizations.index')->with('success', 'Actualization deleted.');
     }
+
+    public function show(Actualization $actualization)
+    {
+        // Eager load relations if needed
+        $actualization->load(['package', 'courier', 'currentWarehouse', 'nextWarehouse']);
+
+        return view('admin.actualizations.show', compact('actualization'));
+    }
+
 }

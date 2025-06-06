@@ -17,12 +17,12 @@
 
         <div class="contents">
             <div class="font-semibold px-4 py-2">Last Courier:</div>
-            <div class="px-4 py-2">{{ $actualization->courier?->name ?? 'N/A' }}</div>
+            <div class="px-4 py-2">{{ $actualization->courier?->id ?? 'N/A' }}</div>
         </div>
 
         <div class="contents">
-            <div class="font-semibold px-4 py-2">Last Warehouse:</div>
-            <div class="px-4 py-2">{{ $actualization->lastWareHouse?->name ?? 'N/A' }}</div>
+            <div class="font-semibold px-4 py-2">Current Warehouse:</div>
+            {{ $actualization->currentWarehouse?->name ?? 'N/A' }}
         </div>
 
         <div class="contents">
