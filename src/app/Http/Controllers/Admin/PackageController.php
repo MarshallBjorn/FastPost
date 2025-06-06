@@ -12,10 +12,42 @@ use App\Models\Actualization;
 
 class PackageController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $packages = Package::with(['sender', 'receiver', 'postmat'])->get();
-        return view('admin.packages.index', compact('packages'));
+        $query = Package::with(['sender', 'receiver', 'postmat'])->latest();
+
+        if ($request->filled('id')) {
+            $query->where('id', $request->input('id'));
+        }
+
+        if ($request->filled('sender_email')) {
+            $query->whereHas('sender', function ($q) use ($request) {
+                $q->where('email', 'like', '%' . $request->input('sender_email') . '%');
+            });
+        }
+
+        if ($request->filled('receiver_email')) {
+            $query->where('receiver_email', 'like', '%' . $request->input('receiver_email') . '%');
+        }
+
+        if ($request->filled('receiver_phone')) {
+            $query->where('receiver_phone', 'like', '%' . $request->input('receiver_phone') . '%');
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        if ($request->filled('size')) {
+            $query->where('size', $request->input('size'));
+        }
+
+        $packages = $query->paginate(6)->withQueryString();
+
+        $statuses = \App\Enums\PackageStatus::cases();
+        $sizes = \App\Enums\PackageSize::cases();
+
+        return view('admin.packages.index', compact('packages', 'statuses', 'sizes'));
     }
 
     public function create()
@@ -45,7 +77,6 @@ class PackageController extends Controller
             'size.in' => 'The package size must be one of the following: S, M, L',
         ]);
 
-        // Handle sender creation if not exists
         if (empty($validated['sender_id']) || !User::find($validated['sender_id'])) {
             $sender = User::create([
                 'first_name' => 'GenName',
@@ -53,12 +84,11 @@ class PackageController extends Controller
                 'phone' => $validated['receiver_phone'],
                 'name' => 'Generated Sender',
                 'email' => 'sender_' . uniqid() . '@example.com',
-                'password' => bcrypt('secret'), // dummy password
+                'password' => bcrypt('secret'),
             ]);
             $validated['sender_id'] = $sender->id;
         }
 
-        // Handle postmat creation if not provided
         if (empty($validated['destination_postmat_id']) || !Postmat::find($validated['destination_postmat_id'])) {
             $postmat = Postmat::create([
                 'name' => 'Fastpost-Tokyo',
@@ -75,7 +105,6 @@ class PackageController extends Controller
 
         Actualization::create([
             'package_id' => $package->id,
-            // message = ['sent', 'in_warehouse', 'in_delivery']
             'message' => 'sent',
             'created_at' => now(),
         ]);
@@ -117,19 +146,20 @@ class PackageController extends Controller
         ]);
 
         $package->update($data);
-        return redirect()->route('packages.index')->with('success', 'Package updated.');
+
+        return redirect()->route('packages.index', $request->query())->with('success', 'Package updated.');
     }
 
-    public function destroy(Package $package)
+    public function destroy(Request $request, Package $package)
     {
         $package->delete();
-        return redirect()->route('packages.index')->with('success', 'Package deleted.');
+        return redirect()->route('packages.index', $request->query())->with('success', 'Package deleted.');
     }
 
-    public function advancePackageRedirect(Package $package)
+    public function advancePackageRedirect(Request $request, Package $package)
     {
         $package->advancePackage();
-        return redirect()->route('packages.index')
+        return redirect()->route('packages.index', $request->query())
             ->with('success', 'Package advanced along its route');
     }
 }

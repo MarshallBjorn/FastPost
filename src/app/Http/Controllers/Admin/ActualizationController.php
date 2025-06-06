@@ -10,9 +10,15 @@ use App\Models\Package;
 
 class ActualizationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $actualizations = Actualization::with(['package', 'courier', 'currentWarehouse'])->latest()->get();
+        $query = Actualization::with(['package', 'courier', 'currentWarehouse'])->latest();
+        
+        if ($request->filled('id')) {
+            $query->where('package_id', $request->input('id')); // exact match is correct here
+        }
+
+        $actualizations = $query->paginate(10)->withQueryString();
         return view('admin.actualizations.index', compact('actualizations'));
     }
     

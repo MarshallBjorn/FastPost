@@ -9,9 +9,34 @@ use App\Models\Warehouse;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(\Illuminate\Http\Request $request)
     {
-        $users = User::all();
+        $query = User::query();
+
+        if ($request->filled('id')) {
+            $query->where('id', $request->input('id'));
+        }
+
+        if ($request->filled('firstname')) {
+            $query->where('first_name', 'like', '%' . $request->input('firstname') . '%');
+        }
+
+        if ($request->filled('lastname')) {
+            $query->where('last_name', 'like', '%' . $request->input('lastname') . '%');
+        }
+
+        if ($request->filled('email')) {
+            $query->where('email', 'like', '%' . $request->input('email') . '%');
+        }
+
+        if ($request->filled('staff_type')) {
+            $query->whereHas('staff', function ($q) use ($request) {
+                $q->where('staff_type', $request->input('staff_type'));
+            });
+        }
+
+        $users = $query->with('staff')->paginate(10)->withQueryString();
+
         return view('admin.users.index', compact('users'));
     }
 

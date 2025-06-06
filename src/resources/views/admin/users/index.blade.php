@@ -6,6 +6,32 @@
         <h1 class="text-2xl font-bold">Users</h1>
         <a href="{{ route('users.create') }}" class="form-submit px-4 py-2">+ Create User</a>
     </div>
+    
+    <form method="GET" action="{{ route('users.index') }}" class="mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input type="text" name="id" value="{{ request('id') }}" placeholder="User ID"
+                class="form-input w-full border border-gray-300 rounded p-2" />
+
+            <div>
+                <input type="text" name="firstname" value="{{ request('firstname') }}" placeholder="First Name"
+                    class="form-input w-full border border-gray-300 rounded p-2" />
+
+                <input type="text" name="lastname" value="{{ request('lastname') }}" placeholder="Last Name"
+                    class="form-input w-full border border-gray-300 rounded p-2" />
+            </div>
+
+            <input type="text" name="email" value="{{ request('email') }}" placeholder="Email"
+                class="form-input w-full border border-gray-300 rounded p-2" />
+
+            <input type="text" name="staff_type" value="{{ request('staff_type') }}" placeholder="Staff Type"
+                class="form-input w-full border border-gray-300 rounded p-2" />
+        </div>
+
+        <div class="mt-3">
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Filter</button>
+            <a href="{{ route('users.index') }}" class="ml-2 text-gray-600">Reset</a>
+        </div>
+    </form>
 
     <div class="overflow-x-auto custom-white-shadow">
         <table class="min-w-full bg-white border-2 border-dotted">
@@ -47,6 +73,9 @@
                 @endforeach
             </tbody>
         </table>
+    </div>
+    <div class="mt-4">
+        {{ $users->links() }}
     </div>
 </div>
 @endsection
