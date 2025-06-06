@@ -16,14 +16,34 @@ class WarehouseRouteController extends Controller
         $currentWarehouseId = auth()->user()->staff->warehouse_id;
         $routes = [];
 
-        $packages = Package::where('status', ['registered', 'in_transit'])->get();
+        $packages = Package::with('latestActualization')->where('status', PackageStatus::IN_TRANSIT)->get();
 
         foreach ($packages as $package) {
-            $path = json_decode($package->route_path, true);
-            if (!$path || count($path) < 2) continue;
+            $actualization = $package->latestActualization;
 
-            $start = $path[0];
-            $next = $path[1];
+            // if (!$actualization) {  // package never moved, therefore at a starting location
+            //     $package->advancePackage();
+            //     $package->load('latestActualization'); // Reload the relationship
+            //     $actualization = $package->latestActualization;
+            // }
+
+            if (
+                !$actualization ||
+                !$actualization->route_remaining ||
+                $actualization->message != 'in_warehouse' ||
+                !($actualization->current_warehouse_id == $currentWarehouseId ||
+                    $actualization->next_warehouse_id == $currentWarehouseId)
+            ) {
+                continue;
+            }
+
+            // $path = json_decode($actualization->route_remaining, true);
+            $start = $actualization->current_warehouse_id;
+            $next = $actualization->next_warehouse_id;
+
+            if (!$start || !$next) {
+                continue;
+            }
 
             // Forward trip
             if ($start == $currentWarehouseId) {
@@ -36,10 +56,12 @@ class WarehouseRouteController extends Controller
                         'count' => 0,
                         'return_count' => 0,
                         'distance' => $distance,
+                        'packages' => [],
                     ];
                 }
 
                 $routes[$key]['count']++;
+                $routes[$key]['packages'][] = $package;
             }
 
             // Return trip check
@@ -47,6 +69,7 @@ class WarehouseRouteController extends Controller
                 $key = "$next-$start"; // Same as forward key reversed
                 if (isset($routes[$key])) {
                     $routes[$key]['return_count']++;
+                    $routes[$key]['packages'][] = $package;
                 }
             }
         }
@@ -69,21 +92,8 @@ class WarehouseRouteController extends Controller
         $packages = Package::whereIn('id', $packageIds)->get();
 
         foreach ($packages as $package) {
-            $remaining = json_decode($package->route_path, true);
-
-            array_shift($remaining); // move to next
-
-            Actualization::create([
-                'package_id' => $package->id,
-                'message' => 'in_warehouse',
-                'route_remaining' => json_encode($remaining),
-                'last_courier_id' => auth()->user()->id,
-                'created_at' => now(),
-            ]);
-
-            $package->route_path = json_encode($remaining);
+            $package->advancePackage();
             $package->status = PackageStatus::IN_TRANSIT;
-
             $package->save();
         }
 

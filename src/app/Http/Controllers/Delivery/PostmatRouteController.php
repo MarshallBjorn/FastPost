@@ -15,15 +15,14 @@ class PostmatRouteController extends Controller
     public function index(Request $request)
     {
         $currentWarehouseId = auth()->user()->staff->warehouse_id;
+        $routes = [];
 
         // Get all registered packages that are heading to this warehouse
-        $packages = Package::where('status', PackageStatus::REGISTERED)
-            ->whereHas('latestActualization', function ($query) use ($currentWarehouseId) {
-                $query->whereNotNull('route_remaining');
-            })
+        $packages = Package::where('status', [PackageStatus::REGISTERED, PackageStatus::IN_TRANSIT])
+            // ->whereHas('latestActualization', function ($query) use ($currentWarehouseId) {
+            //     $query->whereNotNull('route_remaining');
+            // })
             ->get();
-
-        $routes = [];
 
         foreach ($packages as $package) {
             $actualization = $package->latestActualization;
