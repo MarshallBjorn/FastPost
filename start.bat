@@ -61,6 +61,7 @@ echo Laravel application should now be accessible at:
 echo http://localhost:8000
 echo.
 
+REM SOMETIMES IT FAILS - READ THE README.MD ! 
 REM Prompt user to seed the database
 set /p SEED_DB=Would you like to seed the database? (Y/N): 
 if /i "%SEED_DB%"=="Y" (
