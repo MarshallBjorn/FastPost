@@ -100,16 +100,15 @@
             }).addTo(map);
 
             // Get postmats data
-            const postmats = @json($postmats);
+            const postmats = @json($allPostmats);
             const markers = {};
 
             // Add markers to the map
-            postmats.data.forEach(pm => {
+            postmats.forEach(pm => {
                 if (pm.latitude && pm.longitude && !isNaN(pm.latitude) && !isNaN(pm.longitude)) {
                     const marker = L.marker([pm.latitude, pm.longitude])
                         .addTo(map)
                         .bindPopup(`<strong>${pm.name}</strong><br>${pm.city}<br>Status: ${ucfirst(pm.status)}`);
-
                     markers[pm.id] = marker;
                 }
             });
