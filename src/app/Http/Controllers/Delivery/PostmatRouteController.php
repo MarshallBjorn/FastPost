@@ -122,8 +122,13 @@ class PostmatRouteController extends Controller
                 continue;
             }
 
-            // Update route_remaining (remove first step)
-            array_shift($route);
+            // Update stash.is_package_in = false
+            if ($package->stash) {
+                $package->stash->is_package_in = false;
+                $package->stash->reserved_until = null;
+                $package->stash->package_id = null;
+                $package->stash->save();
+            }
 
             // Create new Actualization
             Actualization::create([
@@ -145,7 +150,68 @@ class PostmatRouteController extends Controller
             ->with('success', 'Packages picked up successfully!');
     }
 
+    public function putPackagesInWarehouse(Request $request)
+    {
+        $user = auth()->user();
+        $currentWarehouseId = $user->staff->warehouse_id;
 
+        $packageIds = $request->input('package_ids', []);
+
+        $packages = Package::whereIn('id', $packageIds)->get();
+
+        $errors = [];
+        $processedCount = 0;
+
+        foreach ($packages as $package) {
+            $actualization = $package->latestActualization;
+            $route = [];
+
+            if ($actualization && $actualization->route_remaining) {
+                $route = json_decode($actualization->route_remaining, true);
+            } elseif ($package->route_path) {
+                $route = json_decode($package->route_path, true);
+            }
+
+            // Skip and log error if route is final (empty)
+            if (empty($route)) {
+                $errors[] = "Package #{$package->id} has a final route and cannot be put in warehouse.";
+                continue;
+            }
+
+            // Remove the current warehouse from the route
+            array_shift($route);
+
+            try {
+                Actualization::create([
+                    'package_id' => $package->id,
+                    'route_remaining' => json_encode($route),
+                    'current_warehouse_id' => $currentWarehouseId,
+                    'next_warehouse_id' => $route[0] ?? null,
+                    'message' => 'in_warehouse',
+                    'last_courier_id' => null,
+                    'created_at' => now(),
+                ]);
+
+                $package->status = PackageStatus::IN_TRANSIT;
+                $package->save();
+                $processedCount++;
+            } catch (\Exception $e) {
+                $errors[] = "Failed to update Package #{$package->id}: " . $e->getMessage();
+            }
+        }
+
+        $message = $processedCount > 0
+            ? "Successfully put {$processedCount} package(s) in warehouse."
+            : "No packages were put in warehouse.";
+
+        if (!empty($errors)) {
+            return redirect()->back()
+                ->with('success', $message)
+                ->with('errors', $errors);
+        }
+
+        return redirect()->back()->with('success', $message);
+    }
 
     private function getDistanceBetween($fromId, $toId)
     {
