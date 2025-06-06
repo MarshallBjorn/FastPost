@@ -14,6 +14,7 @@ use App\Models\Stash;
 use App\Utils\DistanceUtils;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Enums\PackageStatus;
 
 class PackageController extends Controller
 {
@@ -38,7 +39,7 @@ class PackageController extends Controller
         $receiver = User::where('email', $request->email)->first();
 
         if (!$receiver) {
-            $receiver_id = 0;
+            $receiver_id = null;
         } else {
             $receiver_id = $receiver->id;
         }
@@ -103,7 +104,7 @@ class PackageController extends Controller
         }
 
         $package->sender_id = Auth::id();
-        // $package->receiver_id = $receiver_id;
+        $package->receiver_id = $receiver_id;
         $package->receiver_phone = $request->phone;
         $package->receiver_email = $request->email;
         $package->destination_postmat_id = $postmat->id;
@@ -191,7 +192,7 @@ class PackageController extends Controller
         }
 
         // Guard against double-clicks
-        if ($package->status !== 'registered') {
+        if ($package->status !== PackageStatus::REGISTERED) {
             return back()->with('error', 'Package is already in transit.');
         }
 
@@ -207,7 +208,7 @@ class PackageController extends Controller
         // Do everything atomically
         DB::transaction(function () use ($package, $stash) {
             // 1. Update status of package
-            $package->update(['status' => 'in_transit']);
+            // $package->update(['status' => 'registered']);
 
             // 2. Confirm reservation of package.
             $stash->update(['is_package_in' => true]);

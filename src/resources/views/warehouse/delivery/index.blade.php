@@ -20,13 +20,8 @@
                 <p><strong>Distance:</strong> {{ $route['distance'] ?? 'Unknown' }} km</p>
                 <form action="{{ route('warehouse.delivery.take', [$route['from']->id, $route['to']->id]) }}" method="POST" class="mt-3">
                     @csrf
-                    @foreach ($packages as $package)
-                        @php
-                            $path = json_decode($package->route_path, true);
-                        @endphp
-                        @if ($path && count($path) > 1 && $path[0] == $route['from']->id && $path[1] == $route['to']->id)
-                            <input type="hidden" name="packages[]" value="{{ $package->id }}">
-                        @endif
+                    @foreach ($route['packages'] as $package)
+                        <input type="hidden" name="packages[]" value="{{ $package->id }}">
                     @endforeach
                     <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Take Order</button>
                 </form>

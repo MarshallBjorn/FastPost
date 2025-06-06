@@ -12,39 +12,16 @@ class ActualizationController extends Controller
 {
     public function index()
     {
-        $actualizations = Actualization::with(['package', 'courier', 'lastWareHouse'])->latest()->get();
+        $actualizations = Actualization::with(['package', 'courier', 'currentWarehouse'])->latest()->get();
         return view('admin.actualizations.index', compact('actualizations'));
     }
-
-    public function create()
-    {
-        $packages = Package::all();
-        return view('admin.actualizations.create', compact('packages'));
-    }
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'package_id' => 'required|exists:packages,id',
-            'message' => 'required|string',
-            'last_courier_id' => 'nullable|exists:users,id',
-            'last_warehouse_id' => 'nullable|exists:warehouses,id',
-            'created_at' => 'required|date',
-        ]);
-
-        Actualization::create($validated);
-        return redirect()->route('actualizations.index')->with('success', 'Actualization created.');
-    }
-
-    public function show(Actualization $actualization)
-    {
-        return view('admin.actualizations.show', compact('actualization'));
-    }
-
+    
     public function edit(Actualization $actualization)
     {
         $packages = Package::all();
-        return view('admin.actualizations.edit', compact('actualization', 'packages'));
+        $warehouses = \App\Models\Warehouse::all();
+        $couriers = \App\Models\User::all(); // filter if needed
+        return view('admin.actualizations.edit', compact('actualization', 'packages', 'warehouses', 'couriers'));
     }
 
     public function update(Request $request, Actualization $actualization)

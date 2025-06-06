@@ -22,6 +22,7 @@
             <a href="{{ route('postmats.index') }}">Postmats</a>
             <a href="{{ route('actualizations.index')}}">Actualizations</a>
             <a href="{{ route('users.index')}}">Accounts</a>
+            <a href="{{ route('home') }}">Home</a>
         </div>
     </header>
 
