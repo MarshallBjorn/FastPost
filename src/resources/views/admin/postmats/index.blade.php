@@ -7,6 +7,31 @@
         <a href="{{ route('postmats.create') }}" class="form-submit px-4 py-2">+ Create Postmat</a>
     </div>
 
+    <form method="GET" action="{{ route('postmats.index') }}" class="mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input type="text" name="id" value="{{ request('id') }}" placeholder="ID"
+                class="form-input w-full border border-gray-300 rounded p-2" />
+
+            <input type="text" name="name" value="{{ request('name') }}" placeholder="Name"
+                class="form-input w-full border border-gray-300 rounded p-2" />
+
+            <input type="text" name="city" value="{{ request('city') }}" placeholder="City"
+                class="form-input w-full border border-gray-300 rounded p-2" />
+
+            <select name="status" class="form-select w-full border border-gray-300 rounded p-2">
+                <option value="">All Statuses</option>
+                <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active</option>
+                <option value="unavailable" {{ request('status') == 'unavailable' ? 'selected' : '' }}>Unavailable</option>
+                <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
+            </select>
+        </div>
+
+        <div class="mt-3">
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Filter</button>
+            <a href="{{ route('postmats.index') }}" class="ml-2 text-gray-600">Reset</a>
+        </div>
+    </form>
+
     <div class="overflow-x-auto custom-white-shadow">
         <table class="min-w-full bg-white border-2 border-dotted">
             <thead class="bg-gray-100 text-left text-sm border-2 border-dotted">

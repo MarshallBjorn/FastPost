@@ -7,6 +7,14 @@
         <h1 class="text-2xl font-bold">Actualizations</h1>
     </div>
 
+    <form method="GET" action="{{ route('actualizations.index') }}" class="mb-4">
+        <div class="form-group">
+            <label for="id">Filter by ID</label>
+            <input type="text" name="id" id="id" value="{{ request('id') }}" class="form-control" placeholder="Enter ID">
+        </div>
+        <button type="submit" class="btn btn-primary mt-2">Filter</button>
+    </form> 
+
     <div class="overflow-x-auto custom-white-shadow">
         <table class="min-w-full bg-white border-2 border-dotted">
             <thead class="bg-gray-100 text-left text-sm border-2 border-dotted">
@@ -35,7 +43,10 @@
                 @endforeach
             </tbody>
         </table>
+    </div>
 
+    <div class="mt-4">
+        {{ $actualizations->links() }}
     </div>
 </div>
 @endsection

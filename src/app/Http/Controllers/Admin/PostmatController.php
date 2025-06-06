@@ -13,9 +13,27 @@ class PostmatController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $postmats = Postmat::with(["stashes.package"])->paginate(10);
+        $query = Postmat::with(['stashes.package']);
+
+        if ($request->filled('id')) {
+            $query->where('id', $request->input('id')); // exact match
+        }
+
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->input('name') . '%');
+        }
+
+        if ($request->filled('city')) {
+            $query->where('city', 'like', '%' . $request->input('city') . '%');
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        $postmats = $query->paginate(10)->withQueryString();
         return view('admin.postmats.index', compact('postmats'));
     }
 
