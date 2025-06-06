@@ -47,8 +47,11 @@
                                 </td>
                                 <td class="px-6 py-4">{{ $package->created_at->format('Y-m-d') }}</td>
                                 <td class="px-6 py-4">
-                                    @if (!$package->stash || !$package->stash->is_package_in)
-                                        {{-- POST: put_package_in_postmat --}}
+                                    @if (
+                                        $package->status === App\Enums\PackageStatus::REGISTERED &&
+                                            $package->stash &&
+                                            !$package->stash->is_package_in)
+                                        {{-- Open Stash --}}
                                         <form action="{{ route('client.put_package_in_postmat') }}" method="POST"
                                             class="inline">
                                             @csrf
@@ -58,11 +61,13 @@
                                             </button>
                                         </form>
                                     @else
+                                        {{-- Track --}}
                                         <a href="{{ route('package.lookup') . '?code=' . $package->id }}"
                                             class="text-indigo-600 hover:text-indigo-900 font-medium">
                                             Track
                                         </a>
                                     @endif
+
                                 </td>
                             </tr>
                         @endforeach
