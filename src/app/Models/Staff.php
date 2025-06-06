@@ -34,4 +34,11 @@ class Staff extends Model
     {
         return $this->belongsTo(Warehouse::class);
     }
+
+    public function currentPackages()
+    {
+        return Package::whereHas('latestActualization', function ($query) {
+            $query->where('last_courier_id', $this->user_id);
+        })->get();
+    }
 }

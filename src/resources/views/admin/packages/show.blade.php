@@ -66,7 +66,7 @@
                 @foreach ($package->actualizations as $actualization)
                     <tr class="border-t-2 border-dotted p-1">
                         <td class="px-3">{{ $actualization->message }}</td>
-                        <td class="px-3">{{ $actualization->courier?->name ?? 'N/A' }}</td>
+                        <td class="px-3">{{ $actualization->courier?->id ?? 'N/A' }}</td>
                         <td class="px-3">{{ $actualization->lastWareHouse?->name ?? 'N/A' }}</td>
                         <td class="px-3">{{ $actualization->created_at }}</td>
                         <td class="px-3">

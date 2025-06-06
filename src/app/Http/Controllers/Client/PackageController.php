@@ -220,7 +220,7 @@ class PackageController extends Controller
             // ]);
         });
 
-        return back()->with('success', 'Package placed in the locker and marked as in transit.');
+        return back()->with('success', "The package has been placed in the postmat and will be picked up by the courier shortly.");
     }
 
     public function show_collect_package(Request $request)
