@@ -65,11 +65,13 @@ Route::prefix('admin')->middleware(['auth', 'verified', 'role:admin'])->group(fu
 
 Route::prefix('warehouse')->middleware(['auth', 'verified', 'role:warehouse_courier'])->group(function () {
     Route::get('/delivery', [WarehouseRouteController::class, 'index'])->name('warehouse.delivery.index');
+    Route::get('/my-packages', [PostmatRouteController::class, 'myPackages'])->name('warehouse.delivery.my_packages');
     Route::post('/take/{from}/{to}', [WarehouseRouteController::class, 'takeOrder'])->name('warehouse.delivery.take');
 });
 
 Route::prefix('postmat')->middleware(['auth', 'verified', 'role:postmat_courier'])->group(function () {
     Route::get('/delivery', [PostmatRouteController::class, 'index'])->name('postmat.delivery.index');
+    Route::get('/my-packages', [PostmatRouteController::class, 'myPackages'])->name('postmat.delivery.my_packages');
     Route::post('/take/{from}/{to}', [PostmatRouteController::class, 'takeOrder'])->name('postmat.delivery.take');
 });
 

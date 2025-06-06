@@ -99,4 +99,11 @@ class WarehouseRouteController extends Controller
 
         return back()->with('status', 'Order from warehouse ' . Warehouse::find($fromId)->city . ' to ' . Warehouse::find($toId)->city . ' taken!');
     }
+
+    public function myPackages()
+    {
+        $packages = auth()->user()->staff->currentPackages();
+
+        return view('postmat.delivery.my_packages', compact('packages'));
+    }
 }
