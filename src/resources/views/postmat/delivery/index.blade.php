@@ -2,7 +2,15 @@
 
 @section('content')
 <div class="max-w-4xl mx-auto p-6">
-    <h1 class="text-3xl font-bold text-gray-800 mb-6">Today's Pickups</h1>
+    <div class="grid grid-cols-2">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Today's Pickups</h1>
+        <div class="mb-6 text-right">
+            <a href="{{ route('postmat.delivery.my_packages') }}"
+            class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+                📦 View My Current Packages
+            </a>
+        </div>
+    </div>
     <p class="text-gray-600 mb-6">
         Below are the postmats sending packages to your warehouse. Pick them up and bring them in.
     </p>
