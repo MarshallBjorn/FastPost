@@ -36,11 +36,13 @@ class WarehouseRouteController extends Controller
 
         foreach ($grouped as $key => $groupPackages) {
             // Parse from and to warehouse IDs from key
-            [$fromId, $toId] = explode('-', $key);
+            [$fromId, $toId] = explode('-', $key) + [null, null];
+
+            if (!is_numeric($fromId) || !is_numeric($toId)) {
+                continue; // Skip this broken group
+            }
 
             $distance = $this->getDistanceBetween($fromId, $toId);
-
-            // Calculate return count: number of packages on return trip (reverse route)
             $returnKey = $toId . '-' . $fromId;
             $returnCount = $grouped->has($returnKey) ? $grouped[$returnKey]->count() : 0;
 
@@ -50,8 +52,8 @@ class WarehouseRouteController extends Controller
                 'count' => $groupPackages->count(),
                 'return_count' => $returnCount,
                 'distance' => $distance,
-                'packages' => $groupPackages->values(), // reset keys for cleaner iteration
-            ];
+                'packages' => $groupPackages->values(),
+            ]; // reset keys for cleaner iteration
         }
 
         return view('warehouse.delivery.index', compact('routes', 'packages'));
@@ -59,11 +61,13 @@ class WarehouseRouteController extends Controller
 
     private function getDistanceBetween($fromId, $toId)
     {
-        $conn = \App\Models\WarehouseConnection::where('from_warehouse_id', $fromId)
-            ->where('to_warehouse_id', $toId)
-            ->first();
+        if (!$fromId || !$toId || !is_numeric($fromId) || !is_numeric($toId)) {
+            return null;
+        }
 
-        return $conn ? $conn->distance_km : null;
+        return \App\Models\WarehouseConnection::where('from_warehouse_id', $fromId)
+            ->where('to_warehouse_id', $toId)
+            ->value('distance_km');
     }
 
     public function takeRoute(Request $request, $fromId, $toId)
@@ -114,14 +118,18 @@ class WarehouseRouteController extends Controller
             $routeRemaining = json_decode($latest->route_remaining, true);
 
             if (is_array($routeRemaining)) {
-                array_shift($routeRemaining); // Remove the just-finished segment
+                array_shift($routeRemaining);
             }
+
+            $nextWarehouseId = is_array($routeRemaining) && count($routeRemaining) > 0
+                ? $routeRemaining[0]
+                : null;
 
             Actualization::create([
                 'package_id' => $package->id,
                 'route_remaining' => json_encode($routeRemaining),
                 'current_warehouse_id' => $toId,
-                'next_warehouse_id' => null,
+                'next_warehouse_id' => $nextWarehouseId,
                 'message' => 'in_warehouse',
                 'last_courier_id' => null,
                 'created_at' => now(),
@@ -140,7 +148,7 @@ class WarehouseRouteController extends Controller
                 $query->where('current_warehouse_id', $fromId)
                     ->where('next_warehouse_id', $toId)
                     ->where('last_courier_id', $courierId)
-                    ->where('message', 'in_transit');
+                    ->where('message', 'in_warehouse');
             })
             ->get();
 
@@ -156,7 +164,7 @@ class WarehouseRouteController extends Controller
                 'package_id' => $package->id,
                 'route_remaining' => json_encode($routeRemaining),
                 'current_warehouse_id' => $toId,
-                'next_warehouse_id' => null,
+                'next_warehouse_id' => $routeRemaining[0],
                 'message' => 'in_warehouse',
                 'last_courier_id' => null,
                 'created_at' => now(),
@@ -197,7 +205,7 @@ class WarehouseRouteController extends Controller
                 'route_remaining' => $a->route_remaining,
                 'current_warehouse_id' => $a->current_warehouse_id,
                 'next_warehouse_id' => $motherWarehouseId,
-                'message' => 'in_transit',
+                'message' => 'in_warehouse',
                 'last_courier_id' => $courier->id,
                 'created_at' => now(),
             ]);
