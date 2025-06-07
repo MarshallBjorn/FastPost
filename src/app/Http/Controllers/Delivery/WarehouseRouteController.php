@@ -105,7 +105,7 @@ class WarehouseRouteController extends Controller
                 $query->where('current_warehouse_id', $fromId)
                     ->where('next_warehouse_id', $toId)
                     ->where('last_courier_id', $courierId)
-                    ->where('message', 'in_transit');
+                    ->where('message', 'in_warehouse');
             })
             ->get();
 
