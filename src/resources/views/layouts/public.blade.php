@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    
+
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
     <style>
@@ -49,8 +49,9 @@
                 <a href="{{ route('public.postmats.index') }}" class="text-gray-700 hover:text-blue-600 transition">Browse Postmats</a>
                 <a href="{{ route('client.send_package') }}" class="text-gray-700 hover:text-blue-600 transition">Send a parcel</a>
                 <a href="{{ route('client.collect_package') }}" class="text-gray-700 hover:text-blue-600 transition">Collect a parcel</a>
-                <a href="{{ route('client.packages') }}" class="text-gray-700 hover:text-blue-600 transition">Your parcels</a>
                 @auth
+                    <a href="{{ route('client.packages') }}" class="text-gray-700 hover:text-blue-600 transition">Your parcels</a>
+                    <a href="{{ route('client.packages') }}" class="text-gray-700 hover:text-blue-600 transition">Your profile</a>
                     <form action="{{ route('logout') }}" method="POST" class="inline">
                         @csrf
                         <button type="submit" class="text-gray-700 hover:text-blue-600 transition">Logout {{auth()->user()->first_name}}</button>

@@ -12,9 +12,25 @@ class UserRequest extends FormRequest
         return true; // Allow all for now. Use auth logic if needed.
     }
 
+    protected function prepareForValidation()
+    {
+        if ($this->filled('password') && $this->input('password') == "") {
+            $this->merge(['password' => null]);
+        }
+    }
+
+    public function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
+    {
+        // dd($validator->errors()->all());
+    }
+
     public function rules(): array
     {
-        $userId = $this->route('user')?->id; // Only present on update
+        $userId = $this->route('user')?->id;
+
+        if ($this->boolean('_profile_update')) {
+            $userId = auth()->id();
+        }
 
         $rules = [
             'first_name' => ['required', 'string', 'max:255'],
@@ -40,7 +56,10 @@ class UserRequest extends FormRequest
             'termination_date' => ['nullable', 'date', 'after_or_equal:hire_date'],
         ];
 
-        if ($this->isMethod('post')) {
+        if ($this->boolean('_profile_update')) {
+            // Optional password for profile updates
+            $rules['password'] = ['nullable', 'string', 'min:8', 'confirmed'];
+        } elseif ($this->isMethod('post')) {
             // Creating: require password
             $rules['password'] = ['required', 'string', 'min:8', 'confirmed'];
         } elseif ($this->isMethod('put') || $this->isMethod('patch')) {
