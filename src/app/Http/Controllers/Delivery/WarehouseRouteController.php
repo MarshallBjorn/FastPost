@@ -14,64 +14,44 @@ class WarehouseRouteController extends Controller
     public function index(Request $request)
     {
         $currentWarehouseId = auth()->user()->staff->warehouse_id;
+
+        $packages = Package::with('latestActualization')
+            ->where('status', PackageStatus::IN_TRANSIT)
+            ->get()
+            ->filter(function ($package) use ($currentWarehouseId) {
+                $actualization = $package->latestActualization;
+                return $actualization &&
+                    $actualization->route_remaining &&
+                    $actualization->message == 'in_warehouse' &&
+                    ($actualization->current_warehouse_id == $currentWarehouseId ||
+                    $actualization->next_warehouse_id == $currentWarehouseId);
+            });
+
+        $grouped = $packages->groupBy(function ($package) {
+            $actualization = $package->latestActualization;
+            return $actualization->current_warehouse_id . '-' . $actualization->next_warehouse_id;
+        });
+
         $routes = [];
 
-        $packages = Package::with('latestActualization')->where('status', PackageStatus::IN_TRANSIT)->get();
+        foreach ($grouped as $key => $groupPackages) {
+            // Parse from and to warehouse IDs from key
+            [$fromId, $toId] = explode('-', $key);
 
-        foreach ($packages as $package) {
-            $actualization = $package->latestActualization;
+            $distance = $this->getDistanceBetween($fromId, $toId);
 
-            // if (!$actualization) {  // package never moved, therefore at a starting location
-            //     $package->advancePackage();
-            //     $package->load('latestActualization'); // Reload the relationship
-            //     $actualization = $package->latestActualization;
-            // }
+            // Calculate return count: number of packages on return trip (reverse route)
+            $returnKey = $toId . '-' . $fromId;
+            $returnCount = $grouped->has($returnKey) ? $grouped[$returnKey]->count() : 0;
 
-            if (
-                !$actualization ||
-                !$actualization->route_remaining ||
-                $actualization->message != 'in_warehouse' ||
-                !($actualization->current_warehouse_id == $currentWarehouseId ||
-                    $actualization->next_warehouse_id == $currentWarehouseId)
-            ) {
-                continue;
-            }
-
-            // $path = json_decode($actualization->route_remaining, true);
-            $start = $actualization->current_warehouse_id;
-            $next = $actualization->next_warehouse_id;
-
-            if (!$start || !$next) {
-                continue;
-            }
-
-            // Forward trip
-            if ($start == $currentWarehouseId) {
-                $key = "$start-$next";
-                if (!isset($routes[$key])) {
-                    $distance = $this->getDistanceBetween($start, $next);
-                    $routes[$key] = [
-                        'from' => Warehouse::find($start),
-                        'to' => Warehouse::find($next),
-                        'count' => 0,
-                        'return_count' => 0,
-                        'distance' => $distance,
-                        'packages' => [],
-                    ];
-                }
-
-                $routes[$key]['count']++;
-                $routes[$key]['packages'][] = $package;
-            }
-
-            // Return trip check
-            if ($next == $currentWarehouseId) {
-                $key = "$next-$start"; // Same as forward key reversed
-                if (isset($routes[$key])) {
-                    $routes[$key]['return_count']++;
-                    $routes[$key]['packages'][] = $package;
-                }
-            }
+            $routes[$key] = [
+                'from' => Warehouse::find($fromId),
+                'to' => Warehouse::find($toId),
+                'count' => $groupPackages->count(),
+                'return_count' => $returnCount,
+                'distance' => $distance,
+                'packages' => $groupPackages->values(), // reset keys for cleaner iteration
+            ];
         }
 
         return view('warehouse.delivery.index', compact('routes', 'packages'));
@@ -86,24 +66,150 @@ class WarehouseRouteController extends Controller
         return $conn ? $conn->distance_km : null;
     }
 
-    public function takeOrder(Request $request, $fromId, $toId)
+    public function takeRoute(Request $request, $fromId, $toId)
     {
-        $packageIds = $request->input('packages', []);
-        $packages = Package::whereIn('id', $packageIds)->get();
+        $courierId = auth()->id();
+
+        $packages = Package::with('latestActualization')
+            ->where('status', PackageStatus::IN_TRANSIT)
+            ->get()
+            ->filter(function ($package) use ($fromId, $toId) {
+                $actualization = $package->latestActualization;
+                return $actualization &&
+                    $actualization->current_warehouse_id == $fromId &&
+                    $actualization->next_warehouse_id == $toId &&
+                    $actualization->message === 'in_warehouse';
+            });
 
         foreach ($packages as $package) {
-            $package->advancePackage();
-            $package->status = PackageStatus::IN_TRANSIT;
-            $package->save();
+            Actualization::create([
+                'package_id' => $package->id,
+                'route_remaining' => $package->latestActualization->route_remaining,
+                'current_warehouse_id' => $fromId,
+                'next_warehouse_id' => $toId,
+                'message' => 'in_warehouse',
+                'last_courier_id' => $courierId,
+                'created_at' => now(),
+            ]);
         }
 
-        return back()->with('status', 'Order from warehouse ' . Warehouse::find($fromId)->city . ' to ' . Warehouse::find($toId)->city . ' taken!');
+        return back()->with('status', 'Route taken from ' . Warehouse::find($fromId)->city . ' to ' . Warehouse::find($toId)->city);
+    }
+
+    public function confirmArrival(Request $request, $fromId, $toId)
+    {
+        $courierId = auth()->id();
+
+        $packages = Package::with('latestActualization')
+            ->whereHas('latestActualization', function ($query) use ($fromId, $toId, $courierId) {
+                $query->where('current_warehouse_id', $fromId)
+                    ->where('next_warehouse_id', $toId)
+                    ->where('last_courier_id', $courierId)
+                    ->where('message', 'in_transit');
+            })
+            ->get();
+
+        foreach ($packages as $package) {
+            $latest = $package->latestActualization;
+            $routeRemaining = json_decode($latest->route_remaining, true);
+
+            if (is_array($routeRemaining)) {
+                array_shift($routeRemaining); // Remove the just-finished segment
+            }
+
+            Actualization::create([
+                'package_id' => $package->id,
+                'route_remaining' => json_encode($routeRemaining),
+                'current_warehouse_id' => $toId,
+                'next_warehouse_id' => null,
+                'message' => 'in_warehouse',
+                'last_courier_id' => null,
+                'created_at' => now(),
+            ]);
+        }
+
+        return back()->with('status', 'Arrival confirmed at ' . Warehouse::find($toId)->city);
+    }
+
+    public function confirmReturn(Request $request, $fromId, $toId)
+    {
+        $courierId = auth()->id();
+
+        $packages = Package::with('latestActualization')
+            ->whereHas('latestActualization', function ($query) use ($fromId, $toId, $courierId) {
+                $query->where('current_warehouse_id', $fromId)
+                    ->where('next_warehouse_id', $toId)
+                    ->where('last_courier_id', $courierId)
+                    ->where('message', 'in_transit');
+            })
+            ->get();
+
+        foreach ($packages as $package) {
+            $latest = $package->latestActualization;
+            $routeRemaining = json_decode($latest->route_remaining, true);
+
+            if (is_array($routeRemaining)) {
+                array_shift($routeRemaining);
+            }
+
+            Actualization::create([
+                'package_id' => $package->id,
+                'route_remaining' => json_encode($routeRemaining),
+                'current_warehouse_id' => $toId,
+                'next_warehouse_id' => null,
+                'message' => 'in_warehouse',
+                'last_courier_id' => null,
+                'created_at' => now(),
+            ]);
+
+            $package->advancePackage(); // Optional
+        }
+
+        return back()->with('status', 'Returned to ' . Warehouse::find($toId)->city);
+    }
+
+    public function startReturnTrip()
+    {
+        $courier = auth()->user();
+        $staff = $courier->staff;
+        $motherWarehouseId = $staff->warehouse_id;
+
+        // Find packages that are IN this warehouse and should go BACK to mother
+        $packages = Package::with('latestActualization')
+            ->where('status', PackageStatus::IN_TRANSIT)
+            ->get()
+            ->filter(function ($package) use ($motherWarehouseId, $staff) {
+                $a = $package->latestActualization;
+                return $a &&
+                    $a->message === 'in_warehouse' &&
+                    $a->current_warehouse_id !== $motherWarehouseId &&
+                    $a->next_warehouse_id === null &&
+                    (
+                        is_array(json_decode($a->route_remaining, true)) &&
+                        in_array($motherWarehouseId, array_column(json_decode($a->route_remaining, true), 'to'))
+                    );
+            });
+
+        foreach ($packages as $package) {
+            $a = $package->latestActualization;
+            Actualization::create([
+                'package_id' => $package->id,
+                'route_remaining' => $a->route_remaining,
+                'current_warehouse_id' => $a->current_warehouse_id,
+                'next_warehouse_id' => $motherWarehouseId,
+                'message' => 'in_transit',
+                'last_courier_id' => $courier->id,
+                'created_at' => now(),
+            ]);
+        }
+
+        return back()->with('status', 'Started return trip to your mother warehouse.');
     }
 
     public function myPackages()
     {
         $packages = auth()->user()->staff->currentPackages();
 
-        return view('postmat.delivery.my_packages', compact('packages'));
+        return view('warehouse.delivery.my_packages', compact('packages'));
     }
 }

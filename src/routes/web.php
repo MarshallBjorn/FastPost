@@ -65,8 +65,11 @@ Route::prefix('admin')->middleware(['auth', 'verified', 'role:admin'])->group(fu
 
 Route::prefix('warehouse')->middleware(['auth', 'verified', 'role:warehouse_courier'])->group(function () {
     Route::get('/delivery', [WarehouseRouteController::class, 'index'])->name('warehouse.delivery.index');
-    Route::get('/my-packages', [PostmatRouteController::class, 'myPackages'])->name('warehouse.delivery.my_packages');
-    Route::post('/take/{from}/{to}', [WarehouseRouteController::class, 'takeOrder'])->name('warehouse.delivery.take');
+    Route::get('/my-packages', [WarehouseRouteController::class, 'myPackages'])->name('warehouse.delivery.my_packages');
+    Route::post('/take/{from}/{to}', [WarehouseRouteController::class, 'takeRoute'])->name('warehouse.delivery.take');
+    Route::post('/confirm-arrival/{from}/{to}', [WarehouseRouteController::class, 'confirmArrival'])->name('warehouse.delivery.confirm_arrival');
+    Route::post('/return-to-mother', [WarehouseRouteController::class, 'startReturnTrip'])->name('warehouse.delivery.start_return');
+    Route::post('/confirm-return/{from}/{to}', [WarehouseRouteController::class, 'confirmReturn'])->name('warehouse.delivery.confirm_return');
 });
 
 Route::prefix('postmat')->middleware(['auth', 'verified', 'role:postmat_courier'])->group(function () {
