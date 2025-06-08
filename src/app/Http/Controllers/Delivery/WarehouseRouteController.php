@@ -247,6 +247,7 @@ class WarehouseRouteController extends Controller
 
         $route->update([
             'status' => 'available',
+            'courier_id' => null,
         ]);
 
         return back()->with('status', 'Returned to ' . Warehouse::find($toId)->city);
