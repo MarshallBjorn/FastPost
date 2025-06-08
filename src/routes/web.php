@@ -69,6 +69,7 @@ Route::prefix('warehouse')->middleware(['auth', 'verified', 'role:warehouse_cour
     Route::post('/take/{from}/{to}', [WarehouseRouteController::class, 'takeRoute'])->name('warehouse.delivery.take');
     Route::post('/confirm-arrival/{from}/{to}', [WarehouseRouteController::class, 'confirmArrival'])->name('warehouse.delivery.confirm_arrival');
     Route::post('/return-to-mother', [WarehouseRouteController::class, 'startReturnTrip'])->name('warehouse.delivery.start_return');
+    Route::post('/warehouse/delivery/reset-route/{from}/{to}', [WarehouseRouteController::class, 'resetRoute'])->name('warehouse.delivery.reset_route');
     Route::post('/confirm-return/{from}/{to}', [WarehouseRouteController::class, 'confirmReturn'])->name('warehouse.delivery.confirm_return');
 });
 

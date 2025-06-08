@@ -54,13 +54,24 @@ class WarehouseRouteController extends Controller
                 return $a->current_warehouse_id == $idB && $a->next_warehouse_id == $idA;
             });
 
-            $routes[$key] = [
+            // Only continue if there are packages in either direction
+            if ($fromAtoB->count() === 0 && $fromBtoA->count() === 0) {
+                continue; // skip routes without any packages
+            }
+
+            $routeData = [
                 'from' => Warehouse::find($idA),
                 'to' => Warehouse::find($idB),
                 'count_to_deliver' => $fromAtoB->count(),
                 'count_to_return' => $fromBtoA->count(),
                 'distance' => $this->getDistanceBetween($idA, $idB) ?? $this->getDistanceBetween($idB, $idA),
             ];
+
+            $courierId = auth()->id();
+
+            $routeData['status'] = $this->getRouteStatus($routeData, $currentWarehouseId, $courierId);
+
+            $routes[$key] = $routeData;
         }
 
         return view('warehouse.delivery.index', compact('routes', 'packages'));
@@ -242,4 +253,69 @@ class WarehouseRouteController extends Controller
 
         return view('warehouse.delivery.my_packages', compact('packages'));
     }
+    private function getRouteStatus($route, $currentWarehouseId, $courierId)
+    {
+        $from = $route['from']->id;
+        $to = $route['to']->id;
+
+        $packages = Package::with('latestActualization')->get();
+
+        $enRoutePackages = $packages->filter(function ($package) use ($from, $to, $courierId) {
+            $a = $package->latestActualization;
+            return $a &&
+                $a->current_warehouse_id == $from &&
+                $a->next_warehouse_id == $to &&
+                $a->message === 'in_warehouse' &&
+                $a->last_courier_id == $courierId;
+        });
+
+        if ($enRoutePackages->count() > 0) {
+            return 'en_route';
+        }
+
+        $returnPackages = $packages->filter(function ($package) use ($from, $to, $courierId) {
+            $a = $package->latestActualization;
+            return $a &&
+                $a->current_warehouse_id == $to &&
+                $a->next_warehouse_id == $from &&
+                $a->message === 'in_warehouse' &&
+                $a->last_courier_id == $courierId;
+        });
+
+        if ($returnPackages->count() > 0) {
+            return 'returning';
+        }
+
+        // Check if there are packages waiting to be delivered (in warehouse waiting to depart)
+        $waitingToDeliver = $packages->filter(function ($package) use ($from, $to) {
+            $a = $package->latestActualization;
+            return $a &&
+                $a->current_warehouse_id == $from &&
+                $a->next_warehouse_id == $to &&
+                $a->message === 'in_warehouse' &&
+                $a->last_courier_id === null;
+        });
+
+        if ($waitingToDeliver->count() > 0) {
+            return 'available';
+        }
+
+        // Check if packages have arrived at destination warehouse (waiting to return)
+        $waitingToReturn = $packages->filter(function ($package) use ($from, $to) {
+            $a = $package->latestActualization;
+            return $a &&
+                $a->current_warehouse_id == $to &&
+                $a->next_warehouse_id == $from &&
+                $a->message === 'in_warehouse' &&
+                $a->last_courier_id === null;
+        });
+
+        if ($waitingToReturn->count() > 0) {
+            return 'available';
+        }
+
+        // No packages anywhere means route is really free to be taken (or hidden)
+        return 'available';
+    }
+
 }
