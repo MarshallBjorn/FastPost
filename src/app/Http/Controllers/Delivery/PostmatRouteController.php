@@ -269,10 +269,9 @@ class PostmatRouteController extends Controller
 
             // Find available stash
             $stash = Stash::where('postmat_id', $package->destination_postmat_id)
-                ->whereNull('package_id')
-                ->orWhere(function ($query) {
-                    $query->whereNotNull('reserved_until')
-                        ->where('reserved_until', '<', now());
+                ->get()
+                ->filter(function ($stash) {
+                    return $stash->isAvailable();
                 })
                 ->first();
 
@@ -299,7 +298,7 @@ class PostmatRouteController extends Controller
             ]);
 
             $package->status = PackageStatus::IN_POSTMAT;
-            $package->unlock_code = fake()->regexify('[A-Z0-9]{6}');
+            $package->unlock_code = fake()->regexify('[0-9]{6}');
             $package->pickup_code = $package->unlock_code;
             $package->save();
 
