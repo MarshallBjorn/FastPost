@@ -1,218 +1,459 @@
-## Running project locally
+# FastPost: Kiedy prędkość jest obowiązkowa
 
-First, create ```.env``` file in src:
+[Projektowe repozytorium](https://github.com/MarshallBjorn/FastPost.git)
+
+[Tablica projektowa](https://github.com/users/MarshallBjorn/projects/3)
+
+---
+
+
+### O projekcie
+
+Projekt ma na celu stworzenie symulacji działania systemu paczkomatów, inspirowanego rozwiązaniami stosowanymi przez firmy kurierskie, takie jak InPost. System został zaprojektowany w sposób modułowy i odzwierciedla kluczowe procesy realizowane w rzeczywistych systemach dostarczania i odbioru paczek przez paczkomaty.
+
+Główne cele projektu to:
+
+- Zrozumienie i odwzorowanie architektury rozproszonego systemu paczkomatowego,
+- Implementacja podstawowych funkcjonalności użytkownika, kuriera oraz administratora systemu,
+- Wizualizacja i uproszczenie przepływu danych między poszczególnymi modułami systemu (np. interfejs użytkownika, serwery, bazy danych, urządzenia paczkomatowe),
+- Symulacja typowych scenariuszy, takich jak nadawanie, odbiór i śledzenie paczek.
+
+Projekt uwzględnia zarówno warstwę frontendową (interfejs użytkownika), jak i backendową (logika działania i komunikacja z bazą danych), umożliwiając realistyczną symulację interakcji między użytkownikami a systemem.
+
+---
+
+### Zespół B2
+
+| Profil | Rola |
+| ------ | ------ |
+| [Oleksii Nawrocki](https://github.com/MarshallBjorn) | lider zespołu |
+| [Tomasz Nowak](https://github.com/Tnovyloo) | członek zespołu |
+| [Dawid Bar](https://github.com/noradenshi) | członek zespołu |
+
+---
+
+
+## Opis projektu
+
+Projekt przedstawia symulację systemu paczkomatów, stworzoną w środowisku akademickim przy użyciu frameworka Laravel (PHP) oraz architektury MVC (Model-View-Controller). Główne zadanie aplikacji to odwzorowanie procesów związanych z nadawaniem, transportem i odbiorem paczek w sposób zbliżony do funkcjonowania systemów firm kurierskich, takich jak InPost.
+
+### Aplikacja oparta jest o wzorzec MVC, zapewniając logiczny podział odpowiedzialności:
+- Model – reprezentuje dane (np. paczka, użytkownik, paczkomat) i operacje na bazie danych, korzystając z ORM Eloquent.
+- View – interfejs użytkownika utworzony w Blade, odpowiadający za prezentację danych.
+- Controller – pośredniczy między warstwami, obsługując żądania użytkownika i zwracając odpowiednie odpowiedzi.
+
+### Wykorzystane technologie:
+- Laravel – framework backendowy (PHP) wspierający routing, middleware, migracje i obsługę sesji,
+- Blade – silnik szablonów do dynamicznych widoków,
+- PostgreSQL – relacyjna baza danych do przechowywania informacji o paczkach, użytkownikach, paczkomatach i logach systemowych,
+- Docker – narzędzie do konteneryzacji, wykorzystane jako środowisko uruchomieniowe i testowe (kontenery dla PHP, serwera web, bazy danych PostgreSQL itp.),
+- Composer – zarządzanie zależnościami PHP.
+
+### Projekt miał na celu:
+- Praktyczne wykorzystanie wiedzy z zakresu programowania w Laravelu i wzorca MVC,
+- Stworzenie realistycznej symulacji systemu logistycznego,
+- Nauczanie pracy zespołowej w kontenerowym środowisku deweloperskim (Docker),
+- Zaprojektowanie spójnego systemu CRUD z różnymi poziomami dostępu użytkowników,
+- Ćwiczenie pracy z relacyjną bazą danych i ORM.
+
+### Dostępne funkcjonalności:
+- zakładanie konta,
+- nadawania paczek,
+- odbieranie paczek,
+- śledzenie paczek,
+- zarzadzanie danymi przez CRUD
+- w panelu kuriera dostawa i odpiór paczek
+  pomiędzy paczkomatami oraz sortowniami
+
+
+### Uruchomienie aplikacji
+Przygotowano poradnik uruchomienia aplikacji laravel w środowisku dockera dla systemów: Windows, Linux, MacOS
+
+#### Windows:
+Włączyć skrypt ```start.bat```
+
+Przy Seedowaniu bazy danych, losowo występuje problem z instalacją Fakera w kontenerze (W szczególności na systemie Windows przy włączeniu start.bat), należy wtedy samemu uruchomić komendę:
+
+```
+docker-compose run --rm composer require fakerphp/faker --dev
+docker-compose exec app php artisan db:seed
+```
+
+
+
+#### MacOS/Linux
+
+Najpierw utwórz plik ```.env``` w folderze src:
 ```bash
 cd src
 cp .env.example .env
 ```
 
-Then to run locally type
+Następnie, aby uruchomić lokalnie, wpisz:
 ```
 docker-compose up -d --build
 docker-compose exec app php artisan migrate
 ```
 
-Then your laravel application should now be accessible at:
+Gdy projekt jest pierwszy raz włączany, należy wygenerować klucz.
+```
+docker-compose exec app php artisan key:generate
+```
+
+Twoja aplikacja Laravel powinna być teraz dostępna pod adresem:
 ```
 http://localhost:8000
 ```
 
-### Small cheatsheet for Docker-compose
-- To stop the containers:
+#### Krótki poradnik dla Docker-compose
+- Aby zatrzymać kontenery:
   ```bash
   docker-compose down
   ```
 
-- To start the containers again:
+- Aby ponownie uruchomić kontenery:
   ```bash
   docker-compose up -d
   ```
 
-- To run Artisan commands:
+- Aby uruchomić polecenia Artisan:
   ```bash
-  docker-compose exec app php artisan [command]
+  docker-compose exec app php artisan [polecenie]
   ```
 
-- To enter the app container:
+- Aby wejść do kontenera aplikacji:
   ```bash
   docker-compose exec app bash
   ```
 
-- To view logs:
+- Aby wyświetlić logi:
   ```bash
   docker-compose logs -f
   ```
 ---
 
-- To seed database:
+#### Seedowanie bazy danych
+- Aby wypełnić bazę danych danymi testowymi:
   ```bash
   docker-compose exec app composer require fakerphp/faker --dev
   docker-compose exec app php artisan migrate:fresh
   docker-compose exec app php artisan db:seed
   ```
 
-  - When installing fakerphp fails (especially on Windows) then try:
+  - Jeśli instalacja fakerphp nie powiedzie się (szczególnie na Windowsie), spróbuj:
     ```
     docker-compose run --rm composer require fakerphp/faker --dev
     docker-compose exec app php artisan db:seed
     ```
 
----
-
-**Notes**
-1. The setup uses PostgreSQL 15 with Alpine Linux for a lightweight container.
-2. Nginx is configured to serve the Laravel application.
-3. The PHP container includes all necessary extensions for Laravel and PostgreSQL.
-4. The database data is persisted in a Docker volume so it survives container restarts.
-5. The composer service ensures dependencies are installed during the build process.
-
-
-## TODO Revise this below readme section.
 ### Baza danych
 
----
-### **Tabela: `Paczkomaty`**
-| Kolumna             | Typ danych         | Opis                                 |
-|---------------------|--------------------|---------------------------------------|
-| `id`                | INT (PK)           | Unikalny identyfikator paczkomatu     |
-| `nazwa`             | VARCHAR            | Nazwa paczkomatu (np. WAW01A)         |
-| `miasto`            | VARCHAR            | Miasto                                |
-| `kod_pocztowy`      | VARCHAR            | Kod pocztowy                          |
-| `szerokosc_geo`     | DECIMAL            | Szerokość geograficzna                |
-| `dlugosc_geo`       | DECIMAL            | Długość geograficzna                  |
-| `status`            | ENUM               | np. 'aktywne', 'niedostępne', 'serwis'|
+![Erd](/docs-img/erd.png)
 
-#### Widoki do tabeli `Paczkomaty`
-- Widok ze wszystkimi paczkomatami na mapie
-- Widok do administracji paczkomatami
+### Widoki aplikacji
 
 ---
 
-### **Tabela: `Skrytki`**
-| Kolumna             | Typ danych         | Opis                                   |
-|---------------------|--------------------|----------------------------------------|
-| `id`                | INT (PK)           | Unikalny identyfikator skrytki         |
-| `paczkomat_id`      | INT (FK → Paczkomaty.id) | Przynależność do paczkomatu      |
-| `rozmiar`           | ENUM               | np. 'S', 'M', 'L'                      |
-| `paczka_id`         | INT (FK → Paczki.id) (NULL) | Paczka znajdująca się w skrytce |
-| `kod_odbioru`       | VARCHAR (NULL)     | Kod obioru przesylki z paczkomatu         |
+#### Strona startowa (Landing Page)
+
+![LandingPage](/docs-img/LandingPage.png)
 
 ---
 
-### **Tabela: `Sortownie`**
-| Kolumna             | Typ danych         | Opis                                  |
-|---------------------|--------------------|---------------------------------------|
-| `id`                | INT (PK)           | Unikalny identyfikator sortowni       |
-| `miasto`            | VARCHAR            | Miasto                                |
-| `kod_pocztowy`      | VARCHAR            | Kod pocztowy                          |
-| `szerokosc_geo`     | DECIMAL            | Szerokość geograficzna                |
-| `dlugosc_geo`       | DECIMAL            | Długość geograficzna                  |
-| `status`            | ENUM               | np. 'aktywna', 'niedostępna', 'serwis'|
+#### Przegląd paczkomatów
 
-#### Widoki do tabeli `Sortownie`
-- Widok ze wszystkimi sortowniami na mapie
-- Widok do administracji sortowniami
-  
-### **Tabela: `SortowaniePolaczenia`**
-| Kolumna              | Typ danych               | Opis                                     |
-|----------------------|--------------------------|------------------------------------------|
-| `id`                 | INT(PK)                  | Unikalny identyfikator sortowni          |
-| `from_warehouse_id`  | INT (FK -> sortownia.id) | ID sortowni z której wychodzi połączenie |
-| `to_warehouse_id`    | INT (FK -> sortownia.id  | ID sortowni do której idzie polączenie   |
-| `dystans_km`         | DECIMAL                  | Odległość pomiędzy sortowniami           |
+![ClientBrowsePostmats](/docs-img/ClientBrowsePostmats.png)
 
 ---
 
-### **Tabela: `Uzytkownicy`**
-| Kolumna             | Typ danych         | Opis                                  |
-|---------------------|--------------------|----------------------------------------|
-| `id`                | INT (PK)           | Unikalny identyfikator użytkownika    |
-| `imie`              | VARCHAR            | Imię                                  |
-| `nazwisko`          | VARCHAR            | Nazwisko                              |
-| `email`             | VARCHAR            | E-mail                                |
-| `telefon`           | VARCHAR            | Numer telefonu                        |
-| `haslo`             | VARCHAR            | zaszyfrowane hasło        |
+#### Logowanie i rejestracja
 
-### **Tabela: `Pracownicy`**
-| Kolumna             | Typ danych         | Opis                                  |
-|---------------------|--------------------|----------------------------------------|
-| `uzytkownik_id`       | INT (FK → Uzytkownicy.id) (PK) | ID uzytkownika |
-| `typ_pracownika`      | ENUM | 'admin', 'kurier', 'magazyn' |
-| `sortownia_id`        | INT (FK → sortownia.id) (NULL) | ID sortowni do jakiej jest przypisany |
-| `data_zatrudnienia`   | DATETIME           | Data zatrudnienia |
-| `data_rozwiazania`    | DATETIME (NULL)    | Data rozwiązania umowy |
-
-#### Logika stojąca za uzytkownikami (i pracownikami)
-- Uzytkownik moze stworzyć konto na 'oficjalnej' stronie.
-- Uzytkownik powinien potwierdzic swoj e-mail (system weryfikacji emaili)
-- Pracownicy są tworzeni przez adminów i przypisywani do oddziałów (sortowni)
-
-#### Widoki uzytkownikow
-- Logowanie
-- Rejestracja wraz z weryfikacja e-maila
-- Zmiana hasla
-- Edytowanie podstawowych informacji 
-
-### **Tabela: `Weryfikacja`**
-| Kolumna             | Typ danych         | Opis                                  |
-|---------------------|--------------------|----------------------------------------|
-| `uzytkownik_id`       | INT (FK → Uzytkownicy.id) (PK) | ID uzytkownika |
-| `kod`                 | VARCHAR    | Wygenerowany kod potwierdzający email |
-| `data_wygaśnięcia`    | DATETIME   | Data wygaśnięcia kodu (po której można go usunąć z bazy) |
+![ClientLoginAndRegister](/docs-img/ClientLoginAndRegister.png)
 
 ---
 
-### **Tabela: `Paczki`**
-| Kolumna             | Typ danych         | Opis                                   |
-|---------------------|--------------------|----------------------------------------|
-| `id`                | INT (PK)           | Unikalny identyfikator paczki             |
-| `nadawca_id`        | INT (FK → Uzytkownicy.id) | Nadawca                            |
-| `docelowy_paczkomat_id`| INT (FK → Paczkomat.id) | Docelowy paczkomat paczk          |
-| `email_odbiorcy`    | VARCHAR            | E-mail odbiorcy                           |
-| `telefon_odbiorcy`  | VARCHAR            | numer telefonu odbiorcy                   |
-| `odbiorca_id`       | INT (FK → Uzytkownicy.id) | Id odbiorcy - jeśli tylko znalezionio e-mail uzytkownika przy nadawaniu paczki    |
-| `status`            | ENUM               | np. 'w drodze', 'w paczkomacie', 'odebrana' |
-| `data_nadania`      | DATETIME           | Data nadania paczki                   |
-| `data_dostarczenia` | DATETIME (NULL)    | Data dostarczenia (jeśli dotyczy)     |
-| `data_odbioru`      | DATETIME (NULL)    | Data odbioru przez odbiorcę           |
+#### Walidacja rejestracji
 
-#### Widoki `Paczek`
-- Widok ze wszystkimi paczkomatami na mapie przy nadawniu przesyłki 
-    - Nadawanie paczki z odpowiednim formularzem
-- Szczegolowy widok co sie dzieje z paczka (nalezy pobrac informacje z odpowiedniej historii paczki) dla obu uzytkownikow
-- Odbieranie zamowienia - stworzenie widoku dla odbierania paczki (symulacja paczkomatu), w tym celu pobierac kod odbioru oraz telefon odbierajacego
-- Odbieranie zamowienia - z poziomu panelu klienta (aplikacji)
-- System do wysylania kodów odbioru / informacji uzytkownikom na e-maila/telefon, jeszcze przemyslec czy zrobic to na poziomie 'chrono taska', czy uzyc 'asynchronous task queue'
-    - Odbywa się w momencie gdy paczka staje się gotowa do odbioru
+![ClientRegisterValidation](/docs-img/ClientRegisterValidation.png)
 
 ---
 
-### **Tabela: `Aktualizacje`**
-| Kolumna             | Typ danych         | Opis                                      |
-|---------------------|--------------------|-------------------------------------------|
-| `id`                | INT (PK)           | ID historii                               |
-| `paczki_id`     | INT (FK → Paczki.id) | ID paczki |
-| `wiadomosc`         | ENUM | 'Wyslano', 'Odebrano w magazynie', 'Wydano do doreczenia' |
-| `ostatni_kurier_id`     | INT (FK → uzytkownik.id ) | ostatni kurier który był odpowiedzialny za paczkę (nadpisywany automatycznie gdy 'skanuje przesylke) |
-| `ostatnia_sortownia_id`     | INT (FK → sortownia.id ) | ostatnia sortownia w której znajdowała się paczka |
-| `utworzono` | DATETIME | kiedy miało miejsce wydarzenie |
+#### Weryfikacja e-mail
+
+![ClientVerifyEmail](/docs-img/ClientVerifyEmail.png)
 
 ---
 
-Logika wysyłania paczki:
-- osoba wysyłająca podaje (musi posiadac konto! - narazie zrobic na sztywno) - potrzebna autoryzacja
-  - (Dzisiaj tak naprawde się generują etykiety z kodami QR wystawiane przez API, pomiedzy systemami np vinted - paczkomaty.)
-  - Formularz posiadajacy:
-    - Paczkomat startowy
-    - E-mail
-    - Telefon
-    - Paczkomat docelowy
-    - TODO jesli rozwijany bedzie rozwijany ten system.
-      - E-mail uytkownika (jesli nie ma go request)
-      - Telefon uzytkownika (jesli nie ma go w request)
-  - Po walidacji danych:
-    - Odbiorca id - jesli e-mail znaleziono w bazie danych.
-    - automatyczny status
-    - automatyczna data nadania
-    - Stworzenie historii paczki 
-  - Generowanie kodu QR do route z historia paczki
+#### Ponowna wysyłka e-maila weryfikacyjnego
+
+![ClientResentVerifyEmail](/docs-img/ClientResentVerifyEmail.png)
+
+---
+
+#### Przekierowanie po weryfikacji konta
+
+![ClientVerifedAccountRedirect](/docs-img/ClientVerifedAccountRedirect.png)
+
+---
+
+#### Wysyłka paczki
+
+![ClientSendParcel](/docs-img/ClientSendParcel.png)
+
+---
+
+#### Filtrowanie paczkomatów przy wysyłce paczki
+
+![ClientSendParcelPostmatFiltration](/docs-img/ClientSendParcelPostmatFiltration.png)
+
+---
+
+#### Paczka wysłana
+
+![ClientSendedParcel](/docs-img/ClientSendedParcel.png)
+
+#### W przypadku braku miejsca w paczkomacie, rezerwowana jest inna skrytka.
+
+![ClientSendedParcelReserve](/docs-img/ClientPackageSummaryOtherPostmat.png)
+
+---
+
+#### Śledzenie paczki (właściciel)
+
+![ClientOwnerTrackParcel](/docs-img/ClientOwnerTrackParcel.png)
+
+---
+
+#### Śledzenie paczki (nieautoryzowane)
+
+![ClientUnauthorizedTrackParcel](/docs-img/ClientUnauthorizedTrackParcel.png)
+
+---
+
+#### Moje wysłane paczki
+
+![ClientYourSentPackages](/docs-img/ClientYourSentPackages.png)
+
+---
+
+#### Zarezerwowany schowek w paczkomacie
+
+![ClientReservedStashInPostmat](/docs-img/ClientReservedStashInPostmat.png)
+
+---
+
+#### Pasek nawigacji kuriera
+
+![CourierNavbar](/docs-img/CourierNavbar.png)
+
+---
+
+#### Pusta lista paczek do odbioru
+
+![CourierPickupEmpty](/docs-img/CourierPickupEmpty.png)
+
+---
+
+#### Paczka uzytkownika po umieszczeniu w paczkomacie
+
+![ClientYourSentPackgesAfterPutInStash](/docs-img/ClientYourSentPackgesAfterPutInStash.png)
+
+---
+
+#### Odbiór paczki po umieszczeniu w paczkomacie przez klienta
+
+![CourierPickupAfterUserPutInStash](/docs-img/CourierPickupAfterUserPutInStash.png)
+
+---
+
+#### Pusta lista paczek u kuriera
+
+![CourierCurrentPackagesEmpty](/docs-img/CourierCurrentPackagesEmpty.png)
+
+---
+
+#### Paczki u kuriera po odebraniu paczki
+
+![CourierCurrentPackagesAfterTakingParcel](/docs-img/CourierCurrentPackagesAfterTakingParcel.png)
+
+---
+
+#### Śledzenie paczki po odbiorze przez kuriera
+
+![ClientTrackPageAfterCourierPickup](/docs-img/ClientTrackPageAfterCourierPickup.png)
+
+---
+
+#### Paczki u kuriera po umieszczeniu w magazynie
+
+![CourierCurrentPackagesAfterPuttingInWarehouse](/docs-img/CourierCurrentPackagesAfterPuttingInWarehouse.png)
+
+---
+
+#### Śledzenie paczki po umieszczeniu w magazynie
+
+![ClientTrackPageAfterCourierPutInWarehouse](/docs-img/ClientTrackPageAfterCourierPutInWarehouse.png)
+
+---
+### Widok admina
+
+#### Trasa paczki
+
+![AdminPageRouteOfPackage](/docs-img/AdminPageRouteOfPackage.png)
+
+---
+
+#### Statystyki
+
+![AdminStatistics](/docs-img/AdminStatistics.png)
+
+---
+
+#### Statystyki (widok 2)
+
+![AdminStatistics2](/docs-img/AdminStatistics2.png)
+
+---
+
+#### Logistyka
+
+![AdminLogistics](/docs-img/AdminLogistics.png)
+
+---
+
+#### Edycja magazynu (logistyka)
+
+![AdminLogisticsEditWarehouse](/docs-img/AdminLogisticsEditWarehouse.png)
+
+---
+
+#### Dostawy
+
+![AdminDeliveries](/docs-img/AdminDeliveries.png)
+
+---
+
+#### Dostawy (widok 2)
+
+![AdminDeliveries2](/docs-img/AdminDeliveries2.png)
+
+---
+
+#### Tworzenie paczki (dostawy)
+
+![AdminDeliveriesCreatePackage](/docs-img/AdminDeliveriesCreatePackage.png)
+
+---
+
+#### Aktualizacja danych
+
+![AdminActualization](/docs-img/AdminActualization.png)
+
+---
+
+#### Konta użytkowników
+
+![AdminAccounts](/docs-img/AdminAccounts.png)
+
+---
+
+#### Tworzenie konta użytkownika
+
+![AdminAccountsCreate](/docs-img/AdminAccountsCreate.png)
+
+---
+
+#### Widok kuriera między magazynowego (kurier który jeździ tylko pomiędzy magazynami)
+
+![WarehouseCourier](/docs-img/WarehouseCourier.png)
+
+---
+
+#### Rozpoczęcie trasy
+
+![WarehouseTakeRoute](/docs-img/WarehouseTakeRoute.png)
+
+---
+
+#### Aktualne paczki u kuriera (1)
+
+![WarehouseCourierCurrentPackges1](/docs-img/WarehouseCourierCurrentPackges1.png)
+
+---
+
+#### Potwierdzenie przyjazdu kuriera
+
+![WarehouseCourierConfirmArrival](/docs-img/WarehouseCourierConfirmArrival.png)
+
+---
+
+#### Rozpoczęcie trasy zwrotnej kuriera
+
+![WarehouseCourierStartReturnTrip](/docs-img/WarehouseCourierStartReturnTrip.png)
+
+---
+
+#### Aktualne paczki u kuriera (zwrot)
+
+![WarehouseCourierCurrentPackages2_return](/docs-img/WarehouseCourierCurrentPackages2_return.png)
+
+---
+
+#### Potwierdzenie zwrotu przez kuriera
+
+![WarehouseCourierConfirmReturn](/docs-img/WarehouseCourierConfirmReturn.png)
+
+---
+
+
+### Odbieranie paczki - Paczka gotowa do odbioru (z kodem odblokowującym)
+
+![FinalPackageWithUnlockCode](/docs-img/ClientCollectingPackageFinalPackage-with-unlock-code.png)
+
+Ekran prezentujący szczegóły paczki wraz z kodem odblokowującym, który umożliwia fizyczne otwarcie skrytki.
+
+---
+
+### Odbieranie paczki - Podsumowanie schowka
+
+![FinalStash](/docs-img/ClientCollectingPackageFinalStash.png)
+
+Podsumowanie zawartości schowka (zarezerwowany, i paczka jest w skrytce)
+
+---
+
+### Odbieranie paczki - Błędny kod lub brak uprawnień
+
+![Invalid](/docs-img/ClientCollectingPackageInvalid.png)
+
+Komunikat o błędnym kodzie odbioru lub braku uprawnień do odebrania paczki.
+
+---
+
+### Odbieranie paczki - Ekran przed odbiorem
+
+![BeforePickup](/docs-img/ClientCollectingPackageBeforePickup.png)
+
+
+---
+
+### Odbieranie paczki - Paczka odebrana poprawnie
+
+![CollectedSuccessfully](/docs-img/ClientCollectingPackageCollectedSuccessfully.png)
+
+Ekran potwierdzający poprawny odbiór paczki. Klient otrzymuje informację o zakończonej operacji.
+
+---
+
+### Odbieranie paczki - Ekran po odbiorze
+
+![AfterPickup](/docs-img/ClientCollectingPackageAfterPickup.png)
+
+---
+
+### Odbieranie paczki - Widok schowka po odbiorze
+
+![StashAfterPickup](/docs-img/ClientCollectingPackageStashAfter.png)
+
+Widok schowka po odebraniu paczki — skrytka jest teraz pusta i gotowa do ponownego użycia.
+

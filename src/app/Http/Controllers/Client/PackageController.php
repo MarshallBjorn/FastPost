@@ -252,7 +252,6 @@ class PackageController extends Controller
         $inDestination = $stash
             && $stash->postmat_id == $package->destination_postmat_id
             && $stash->is_package_in;
-
         if (! $inDestination) {
             return back()->withErrors([
                 'unlock_code' => 'Package is not yet available at the destination postmat.',
