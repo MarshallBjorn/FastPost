@@ -38,4 +38,9 @@ class Actualization extends Model
     public function nextWarehouse() {
         return $this->belongsTo(Warehouse::class, 'next_warehouse_id');
     }
+
+    public function routes()
+    {
+        return $this->belongsToMany(Route::class, 'actualization_route');
+    }
 }
