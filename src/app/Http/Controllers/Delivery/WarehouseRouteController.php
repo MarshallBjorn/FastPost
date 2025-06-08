@@ -259,7 +259,7 @@ class WarehouseRouteController extends Controller
         $motherWarehouseId = $staff->warehouse_id;
 
         $route = Route::where('from_warehouse_id', $motherWarehouseId)
-            ->where('courier_id', $courier)
+            ->where('courier_id', $courier->id)
             ->first();
 
         $packages = Package::with('latestActualization')
