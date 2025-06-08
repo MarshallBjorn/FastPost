@@ -57,15 +57,6 @@
                 </form>
             @endif
 
-            <form action="{{ route('warehouse.delivery.reset_route', [$route['from']->id, $route['to']->id]) }}" method="POST" class="inline-block ml-2">
-                @csrf
-                <button 
-                    type="submit" 
-                    class="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded shadow transition duration-150"
-                >
-                    🔄 Reset Route
-                </button>
-            </form>
         </div>
     </div>
     @empty

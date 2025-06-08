@@ -146,43 +146,265 @@ http://localhost:8000
     docker-compose exec app php artisan db:seed
     ```
 
-
 ### Baza danych
 
-![Diagram ERD](./docs-img/erd.png)
+![Erd](/docs-img/erd.png)
 
-## Widoki aplikacji 
+### Widoki aplikacji
 
-![Strona główna](./docs-img/screen.png)
-*Strona główna*
+---
 
-![Strona główna](./docs-img/screen.png)
-*Logowanie*
+#### Strona startowa (Landing Page)
 
-![Strona główna](./docs-img/screen.png)
-*Rejestracja*
+![LandingPage](/docs-img/LandingPage.png)
 
-...
+---
 
-*CRUD*
+#### Przegląd paczkomatów
 
-...
+![ClientBrowsePostmats](/docs-img/ClientBrowsePostmats.png)
 
-*Zarządzanie użytkownikami*
+---
 
-...
+#### Logowanie i rejestracja
 
-*Profil użytkownika*
+![ClientLoginAndRegister](/docs-img/ClientLoginAndRegister.png)
 
-...
+---
 
-*Dokonanie zakupu/wypożyczenia...*
+#### Walidacja rejestracji
 
-...
+![ClientRegisterValidation](/docs-img/ClientRegisterValidation.png)
 
-itd.
+---
 
-...
+#### Weryfikacja e-mail
+
+![ClientVerifyEmail](/docs-img/ClientVerifyEmail.png)
+
+---
+
+#### Ponowna wysyłka e-maila weryfikacyjnego
+
+![ClientResentVerifyEmail](/docs-img/ClientResentVerifyEmail.png)
+
+---
+
+#### Przekierowanie po weryfikacji konta
+
+![ClientVerifedAccountRedirect](/docs-img/ClientVerifedAccountRedirect.png)
+
+---
+
+#### Wysyłka paczki
+
+![ClientSendParcel](/docs-img/ClientSendParcel.png)
+
+---
+
+#### Filtrowanie paczkomatów przy wysyłce paczki
+
+![ClientSendParcelPostmatFiltration](/docs-img/ClientSendParcelPostmatFiltration.png)
+
+---
+
+#### Paczka wysłana
+
+![ClientSendedParcel](/docs-img/ClientSendedParcel.png)
+
+#### W przypadku braku miejsca w paczkomacie, rezerwowana jest inna skrytka.
+
+![ClientSendedParcelReserve](/docs-img/ClientPackageSummaryOtherPostmat.png)
+
+---
+
+#### Śledzenie paczki (właściciel)
+
+![ClientOwnerTrackParcel](/docs-img/ClientOwnerTrackParcel.png)
+
+---
+
+#### Śledzenie paczki (nieautoryzowane)
+
+![ClientUnauthorizedTrackParcel](/docs-img/ClientUnauthorizedTrackParcel.png)
+
+---
+
+#### Moje wysłane paczki
+
+![ClientYourSentPackages](/docs-img/ClientYourSentPackages.png)
+
+---
+
+#### Zarezerwowany schowek w paczkomacie
+
+![ClientReservedStashInPostmat](/docs-img/ClientReservedStashInPostmat.png)
+
+---
+
+#### Pasek nawigacji kuriera
+
+![CourierNavbar](/docs-img/CourierNavbar.png)
+
+---
+
+#### Pusta lista paczek do odbioru
+
+![CourierPickupEmpty](/docs-img/CourierPickupEmpty.png)
+
+---
+
+#### Paczka uzytkownika po umieszczeniu w paczkomacie
+
+![ClientYourSentPackgesAfterPutInStash](/docs-img/ClientYourSentPackgesAfterPutInStash.png)
+
+---
+
+#### Odbiór paczki po umieszczeniu w paczkomacie przez klienta
+
+![CourierPickupAfterUserPutInStash](/docs-img/CourierPickupAfterUserPutInStash.png)
+
+---
+
+#### Pusta lista paczek u kuriera
+
+![CourierCurrentPackagesEmpty](/docs-img/CourierCurrentPackagesEmpty.png)
+
+---
+
+#### Paczki u kuriera po odebraniu paczki
+
+![CourierCurrentPackagesAfterTakingParcel](/docs-img/CourierCurrentPackagesAfterTakingParcel.png)
+
+---
+
+#### Śledzenie paczki po odbiorze przez kuriera
+
+![ClientTrackPageAfterCourierPickup](/docs-img/ClientTrackPageAfterCourierPickup.png)
+
+---
+
+#### Paczki u kuriera po umieszczeniu w magazynie
+
+![CourierCurrentPackagesAfterPuttingInWarehouse](/docs-img/CourierCurrentPackagesAfterPuttingInWarehouse.png)
+
+---
+
+#### Śledzenie paczki po umieszczeniu w magazynie
+
+![ClientTrackPageAfterCourierPutInWarehouse](/docs-img/ClientTrackPageAfterCourierPutInWarehouse.png)
+
+---
+### Widok admina
+
+#### Trasa paczki
+
+![AdminPageRouteOfPackage](/docs-img/AdminPageRouteOfPackage.png)
+
+---
+
+#### Statystyki
+
+![AdminStatistics](/docs-img/AdminStatistics.png)
+
+---
+
+#### Statystyki (widok 2)
+
+![AdminStatistics2](/docs-img/AdminStatistics2.png)
+
+---
+
+#### Logistyka
+
+![AdminLogistics](/docs-img/AdminLogistics.png)
+
+---
+
+#### Edycja magazynu (logistyka)
+
+![AdminLogisticsEditWarehouse](/docs-img/AdminLogisticsEditWarehouse.png)
+
+---
+
+#### Dostawy
+
+![AdminDeliveries](/docs-img/AdminDeliveries.png)
+
+---
+
+#### Dostawy (widok 2)
+
+![AdminDeliveries2](/docs-img/AdminDeliveries2.png)
+
+---
+
+#### Tworzenie paczki (dostawy)
+
+![AdminDeliveriesCreatePackage](/docs-img/AdminDeliveriesCreatePackage.png)
+
+---
+
+#### Aktualizacja danych
+
+![AdminActualization](/docs-img/AdminActualization.png)
+
+---
+
+#### Konta użytkowników
+
+![AdminAccounts](/docs-img/AdminAccounts.png)
+
+---
+
+#### Tworzenie konta użytkownika
+
+![AdminAccountsCreate](/docs-img/AdminAccountsCreate.png)
+
+---
+
+#### Widok kuriera między magazynowego (kurier który jeździ tylko pomiędzy magazynami)
+
+![WarehouseCourier](/docs-img/WarehouseCourier.png)
+
+---
+
+#### Rozpoczęcie trasy
+
+![WarehouseTakeRoute](/docs-img/WarehouseTakeRoute.png)
+
+---
+
+#### Aktualne paczki u kuriera (1)
+
+![WarehouseCourierCurrentPackges1](/docs-img/WarehouseCourierCurrentPackges1.png)
+
+---
+
+#### Potwierdzenie przyjazdu kuriera
+
+![WarehouseCourierConfirmArrival](/docs-img/WarehouseCourierConfirmArrival.png)
+
+---
+
+#### Rozpoczęcie trasy zwrotnej kuriera
+
+![WarehouseCourierStartReturnTrip](/docs-img/WarehouseCourierStartReturnTrip.png)
+
+---
+
+#### Aktualne paczki u kuriera (zwrot)
+
+![WarehouseCourierCurrentPackages2_return](/docs-img/WarehouseCourierCurrentPackages2_return.png)
+
+---
+
+#### Potwierdzenie zwrotu przez kuriera
+
+![WarehouseCourierConfirmReturn](/docs-img/WarehouseCourierConfirmReturn.png)
+
+---
 
 
-...
+
+### TODO odbieranie paczki 

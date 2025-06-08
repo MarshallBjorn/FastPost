@@ -158,7 +158,7 @@ class PackageController extends Controller
             'qrCode' => $qrCodeBase64,
             'stashChanged' => $stash_changed,
             'originalStartPostmat' => $original_start_postmat,
-            'distance' => $distance ?? null,
+            'distance' => $closest_distance ?? null,
             'trackUrl' => $track_url,
         ]);
     }
