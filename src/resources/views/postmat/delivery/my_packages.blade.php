@@ -71,20 +71,37 @@
         @endif
 
         @if ($toPostmatPackages->isNotEmpty())
-            <h2 class="text-2xl font-semibold mb-4">Packages to Deliver to Postmat</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                @foreach ($toPostmatPackages as $package)
-                    <div class="bg-white p-5 rounded-lg shadow hover:shadow-lg transition">
-                        <p><strong class="font-semibold">ID:</strong> {{ $package->id }}</p>
-                        <p><strong class="font-semibold">Status:</strong> {{ ucfirst($package->status->value) }}</p>
-                        <p><strong class="font-semibold">From Postmat:</strong>
-                            {{ optional($package->startPostmat)->name ?? '-' }}</p>
-                        <p><strong class="font-semibold">To:</strong>
-                            {{ optional($package->destinationPostmat)->name ?? '-' }}</p>
-                        <p><strong class="font-semibold">Route:</strong> <span class="text-gray-600">Final</span></p>
-                    </div>
-                @endforeach
-            </div>
+            <form action="{{ route('postmat.delivery.deliverToPostmat') }}" method="POST" class="mb-8">
+                @csrf
+
+                <h2 class="text-2xl font-semibold mb-4">📤 Packages to Deliver to Postmat</h2>
+
+                <div class="mb-4 flex items-center space-x-3">
+                    <input type="checkbox" id="checkAllDeliveries" class="form-checkbox h-5 w-5 text-blue-600 cursor-pointer">
+                    <label for="checkAllDeliveries" class="select-none text-lg font-medium text-gray-700 cursor-pointer">
+                        Check All Packages to Deliver
+                    </label>
+                </div>
+
+                <div class="max-h-72 overflow-y-auto border rounded-md shadow-sm p-4 bg-white">
+                    @foreach ($toPostmatPackages as $package)
+                        <label class="flex items-center space-x-3 p-2 rounded cursor-pointer hover:bg-blue-50 transition"
+                               for="deliver_package_{{ $package->id }}">
+                            <input type="checkbox" name="package_ids[]" value="{{ $package->id }}"
+                                   id="deliver_package_{{ $package->id }}" class="form-checkbox h-5 w-5 text-blue-600">
+                            <span class="text-gray-800 font-medium">#{{ $package->id }}</span>
+                            <span class="text-sm text-gray-500">
+                                To: {{ optional($package->destinationPostmat)->name ?? '-' }}
+                            </span>
+                        </label>
+                    @endforeach
+                </div>
+
+                <button type="submit"
+                        class="mt-6 w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg shadow-lg transition duration-200">
+                    Deliver Packages to Postmat
+                </button>
+            </form>
         @endif
 
         @if ($packages->isEmpty())
@@ -97,6 +114,17 @@
             const checked = e.target.checked;
             document.querySelectorAll('input[name="package_ids[]"]').forEach(checkbox => {
                 checkbox.checked = checked;
+            });
+        });
+
+        document.getElementById('checkAllDeliveries')?.addEventListener('change', function(e) {
+            const checked = e.target.checked;
+            document.querySelectorAll('#deliver_package_' + e.target.id).forEach(checkbox => {
+                checkbox.checked = checked;
+            });
+
+            document.querySelectorAll('input[name="package_ids[]"]').forEach(cb => {
+                if (cb.id.startsWith('deliver_package_')) cb.checked = checked;
             });
         });
     </script>

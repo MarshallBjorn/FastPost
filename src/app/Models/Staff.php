@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PackageStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
@@ -39,6 +40,8 @@ class Staff extends Model
     {
         return Package::whereHas('latestActualization', function ($query) {
             $query->where('last_courier_id', $this->user_id);
-        })->get();
+        })
+            ->where('status', '!=', PackageStatus::IN_POSTMAT) // exclude delivered packages
+            ->get();
     }
 }

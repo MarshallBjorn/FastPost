@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Builder;
 
 class Stash extends Model
 {
@@ -26,6 +27,9 @@ class Stash extends Model
         'is_package_in' => 'boolean'
     ];
 
+    /**
+     * Relationships
+     */
     public function postmat()
     {
         return $this->belongsTo(Postmat::class);
@@ -37,51 +41,67 @@ class Stash extends Model
     }
 
     /**
+     * Scope: Available stashes
+     * - No package currently inside
+     * - Not reserved or reservation expired
+     */
+    public function scopeAvailable(Builder $query): Builder
+    {
+        return $query->where('is_package_in', false)
+                     ->where(function ($q) {
+                         $q->whereNull('reserved_until')
+                           ->orWhere('reserved_until', '<=', now());
+                     })
+                     ->whereNull('package_id');
+    }
+
+    /**
      * Check if the stash is currently reserved
      */
-    public function isReserved()
+    public function isReserved(): bool
     {
         return $this->reserved_until && $this->reserved_until->isFuture();
     }
 
     /**
-     * Check if the stash is available
+     * Check if the stash is available for a new package
      */
-    public function isAvailable()
+    public function isAvailable(): bool
     {
-        return !$this->package_id ||
-            ($this->reserved_until && $this->reserved_until->isPast());
+        return !$this->is_package_in &&
+            (!$this->reserved_until || $this->reserved_until->isPast()) &&
+            !$this->package_id;
     }
 
     /**
      * Reserve the stash for a package
      */
-    public function reserveFor(Package $package)
+    public function reserveFor(Package $package): void
     {
         $this->update([
             'package_id' => $package->id,
             'reserved_until' => now()->addHours(24),
-            'is_package_in' => false
+            'is_package_in' => false,
         ]);
     }
 
     /**
-     * Mark package as placed in the stash
+     * Mark the stash as having a delivered package inside
      */
-    public function markPackageDelivered()
+    public function markPackageDelivered(): void
     {
         $this->update(['is_package_in' => true]);
     }
 
     /**
-     * Clear the reservation
+     * Clear the stash reservation and contents
      */
-    public function clearReservation()
+    public function clearReservation(): void
     {
         $this->update([
             'package_id' => null,
             'reserved_until' => null,
-            'is_package_in' => false
+            'is_package_in' => false,
         ]);
     }
 }

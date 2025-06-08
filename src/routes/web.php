@@ -77,6 +77,7 @@ Route::prefix('postmat')->middleware(['auth', 'verified', 'role:postmat_courier'
     Route::get('/delivery', [PostmatRouteController::class, 'index'])->name('postmat.delivery.index');
     Route::get('/my-packages', [PostmatRouteController::class, 'myPackages'])->name('postmat.delivery.my_packages');
     Route::post('/delivery/pickup/{postmat}', [PostmatRouteController::class, 'pickup'])->name('postmat.delivery.pickup');
+    Route::post('/delivery/deliver', [PostmatRouteController::class, 'deliverToPostmat'])->name('postmat.delivery.deliverToPostmat');
     Route::post('/delivery/put-in-warehouse', [PostmatRouteController::class, 'putPackagesInWarehouse'])->name('postmat.delivery.putPackagesInWarehouse');
     Route::post('/take/{from}/{to}', [PostmatRouteController::class, 'takeOrder'])->name('postmat.delivery.take');
 });

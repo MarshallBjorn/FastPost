@@ -161,7 +161,7 @@ class WarehouseRouteController extends Controller
                 'last_courier_id' => auth()->user()->id,
                 'route_remaining' => $package->latestActualization->route_remaining, // keep same or adjust
             ]);
-            
+
             $package->update(['status' => PackageStatus::IN_TRANSIT]);
         }
 
