@@ -1,4 +1,4 @@
-# Projekt AI1
+# FastPost: When speed is mandatory.
 
 [Repozytorium projektu](https://github.com/users/abackia/repo1)
 
@@ -7,19 +7,19 @@
 ---
 
 
-### Temat projektu
+### About
 
 .........................
 
 ---
 
-### Zespół X
+### Team B2
 
-| Profil | Rola |
+| Profile | Role |
 | ------ | ------ |
-| [abackia](https://github.com/abackia) | lider zespołu |
-| [bbacki](https://github.com/bbacki) | członek zespołu |
-| [dadadadasas](https://github.com/dadadadasas) | członek zespołu |
+| [Oleksii Nawrocki](https://github.com/MarshallBjorn) | lider zespołu |
+| [Tomasz Nowak](https://github.com/Tnovyloo) | członek zespołu |
+| [Dawid Bar](https://github.com/noradenshi) | członek zespołu |
 
 ---
 
