@@ -286,6 +286,21 @@ class WarehouseRouteController extends Controller
             return 'returning';
         }
 
+        // Check if route is arrived (packages just arrived to 'to' warehouse by courier)
+        $arrivedPackages = $packages->filter(function ($package) use ($from, $to) {
+            $a = $package->latestActualization;
+            return $a &&
+                $a->current_warehouse_id == $to &&
+                $a->next_warehouse_id != $to &&
+                $a->message === 'in_warehouse' &&
+                $a->last_courier_id === null;  // Courier has just arrived with packages
+        });
+
+        if ($arrivedPackages->count() > 0) {
+            return 'arrived';
+        }
+
+
         // Check if there are packages waiting to be delivered (in warehouse waiting to depart)
         $waitingToDeliver = $packages->filter(function ($package) use ($from, $to) {
             $a = $package->latestActualization;
