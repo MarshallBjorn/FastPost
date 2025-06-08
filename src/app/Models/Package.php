@@ -96,7 +96,7 @@ class Package extends Model
 
     public function getCollectedDate(): string
     {
-        return $this->collected_date ? $this->collected_date->format('d M Y, H:i') : 'N/A';
+        return $this->collected_date;
     }
 
     public function getUnlockCode(): string

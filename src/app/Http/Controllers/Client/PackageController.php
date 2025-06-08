@@ -158,7 +158,7 @@ class PackageController extends Controller
             'qrCode' => $qrCodeBase64,
             'stashChanged' => $stash_changed,
             'originalStartPostmat' => $original_start_postmat,
-            'distance' => $distance ?? null,
+            'distance' => $closest_distance ?? null,
             'trackUrl' => $track_url,
         ]);
     }
@@ -252,7 +252,6 @@ class PackageController extends Controller
         $inDestination = $stash
             && $stash->postmat_id == $package->destination_postmat_id
             && $stash->is_package_in;
-
         if (! $inDestination) {
             return back()->withErrors([
                 'unlock_code' => 'Package is not yet available at the destination postmat.',

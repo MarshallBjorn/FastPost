@@ -22,22 +22,30 @@ class WarehouseRouteController extends Controller
             ->where('status', PackageStatus::IN_TRANSIT)
             ->get()
             ->filter(function ($package) use ($currentWarehouseId) {
-                $actualization = $package->latestActualization;
-                return $actualization &&
-                    $actualization->route_remaining &&
-                    $actualization->message === 'in_warehouse' &&
+                $a = $package->latestActualization;
+                return $a &&
+                    $a->route_remaining &&
+                    $a->message === 'in_warehouse' &&
                     (
-                        $actualization->current_warehouse_id == $currentWarehouseId ||
-                        $actualization->next_warehouse_id == $currentWarehouseId
+                        $a->current_warehouse_id == $currentWarehouseId ||
+                        $a->next_warehouse_id == $currentWarehouseId
                     );
             });
 
-        $grouped = $packages->groupBy(function ($package) {
+        // Group using normalized direction: always mother -> target
+        $grouped = $packages->groupBy(function ($package) use ($currentWarehouseId) {
             $a = $package->latestActualization;
-            $ids = [$a->current_warehouse_id, $a->next_warehouse_id];
-            sort($ids);
-            return implode('-', $ids);
-        });
+            $from = $a->current_warehouse_id;
+            $to = $a->next_warehouse_id;
+
+            if ($from == $currentWarehouseId) {
+                return "$from-$to";
+            } elseif ($to == $currentWarehouseId) {
+                return "$to-$from";
+            }
+
+            return null;
+        })->filter(); // remove null keys
 
         $routes = [];
 
@@ -69,7 +77,7 @@ class WarehouseRouteController extends Controller
             ];
         }
 
-        // Add fallback for any ongoing DB route not already in $routes
+        // Fallback for ongoing DB routes (ensure normalized direction)
         $existingKeys = collect($routes)->keys();
 
         $activeDbRoutes = Route::whereNotNull('courier_id')
@@ -79,9 +87,13 @@ class WarehouseRouteController extends Controller
         foreach ($activeDbRoutes as $route) {
             $idA = $route->from_warehouse_id;
             $idB = $route->to_warehouse_id;
-            $ids = [$idA, $idB];
-            sort($ids);
-            $key = implode('-', $ids);
+
+            // Always use mother warehouse ID as from (normalize)
+            if ($idA != $currentWarehouseId && $idB == $currentWarehouseId) {
+                [$idA, $idB] = [$idB, $idA];
+            }
+
+            $key = "$idA-$idB";
 
             if ($existingKeys->contains($key)) continue;
 
@@ -161,7 +173,7 @@ class WarehouseRouteController extends Controller
                 'last_courier_id' => auth()->user()->id,
                 'route_remaining' => $package->latestActualization->route_remaining, // keep same or adjust
             ]);
-            
+
             $package->update(['status' => PackageStatus::IN_TRANSIT]);
         }
 
@@ -265,12 +277,11 @@ class WarehouseRouteController extends Controller
                 'last_courier_id' => null,
                 'created_at' => now(),
             ]);
-
         }
 
         $route->update([
-            'status' => 'completed',
-            'courier_id' => auth()->user()->id,
+            'status' => 'available',
+            'courier_id' => null,
         ]);
 
         return back()->with('status', 'Returned to ' . Warehouse::find($toId)->city);
