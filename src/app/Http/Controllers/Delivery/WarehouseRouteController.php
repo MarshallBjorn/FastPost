@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Delivery;
 
 use App\Enums\PackageStatus;
 use App\Http\Controllers\Controller;
-use App\Models\WarehouseConnection;
+use App\Models\Route;
 use App\Models\Actualization;
 use App\Models\Package;
 use App\Models\Warehouse;
+use App\Models\WarehouseConnection;
 use Illuminate\Http\Request;
+use Log;
 
 class WarehouseRouteController extends Controller
 {
@@ -25,7 +27,7 @@ class WarehouseRouteController extends Controller
                     $actualization->route_remaining &&
                     $actualization->message == 'in_warehouse' &&
                     ($actualization->current_warehouse_id == $currentWarehouseId ||
-                     $actualization->next_warehouse_id == $currentWarehouseId);
+                    $actualization->next_warehouse_id == $currentWarehouseId);
             });
 
         $grouped = $packages->groupBy(function ($package) {
@@ -34,7 +36,7 @@ class WarehouseRouteController extends Controller
             sort($ids); // always smallest-first, ensures 1-2 and 2-1 are grouped
             return implode('-', $ids);
         });
-        
+
         $routes = [];
 
         foreach ($grouped as $key => $groupPackages) {
@@ -67,15 +69,17 @@ class WarehouseRouteController extends Controller
                 'distance' => $this->getDistanceBetween($idA, $idB) ?? $this->getDistanceBetween($idB, $idA),
             ];
 
-            $courierId = auth()->id();
+            $response = $this->getRouteStatus($routeData['from']->id, $routeData['to']->id);
+            $data = json_decode($response->getContent(), true);
+            $status = $data['status'] ?? 'available';
 
-            $routeData['status'] = $this->getRouteStatus($routeData, $currentWarehouseId, $courierId);
+            $routeData['status'] = $status;
 
             $routes[$key] = $routeData;
         }
 
         return view('warehouse.delivery.index', compact('routes', 'packages'));
-    }    
+    }
 
     private function getDistanceBetween($fromId, $toId)
     {
@@ -92,27 +96,51 @@ class WarehouseRouteController extends Controller
     {
         $courierId = auth()->id();
 
+        // Check if route already exists between from and to warehouses
+        $route = Route::where('from_warehouse_id', $fromId)
+            ->where('to_warehouse_id', $toId)
+            ->first();
+
+        if (!$route) {
+            // Create new route record
+            $route = Route::create([
+                'from_warehouse_id' => $fromId,
+                'to_warehouse_id' => $toId,
+                'courier_id' => $courierId,
+                'status' => 'en_route',
+            ]);
+        } else {
+            // Update courier and status if route already exists but not assigned or taken
+            $route->update([
+                'courier_id' => $courierId,
+                'status' => 'en_route',
+            ]);
+        }
+
+        // Load relevant packages on this route in transit
         $packages = Package::with('latestActualization')
             ->where('status', PackageStatus::IN_TRANSIT)
             ->get()
             ->filter(function ($package) use ($fromId, $toId) {
-                $actualization = $package->latestActualization;
-                return $actualization &&
-                    $actualization->current_warehouse_id == $fromId &&
-                    $actualization->next_warehouse_id == $toId &&
-                    $actualization->message === 'in_warehouse';
+                $a = $package->latestActualization;
+                return $a &&
+                    $a->route_remaining &&
+                    $a->message === 'in_warehouse' &&
+                    $a->current_warehouse_id == $fromId &&
+                    $a->next_warehouse_id == $toId;
             });
 
         foreach ($packages as $package) {
-            Actualization::create([
-                'package_id' => $package->id,
-                'route_remaining' => $package->latestActualization->route_remaining,
+            $package->actualizations()->create([
                 'current_warehouse_id' => $fromId,
                 'next_warehouse_id' => $toId,
                 'message' => 'in_warehouse',
-                'last_courier_id' => $courierId,
                 'created_at' => now(),
+                'last_courier_id' => auth()->user()->id,
+                'route_remaining' => $package->latestActualization->route_remaining, // keep same or adjust
             ]);
+            
+            $package->update(['status' => PackageStatus::IN_TRANSIT]);
         }
 
         return back()->with('status', 'Route taken from ' . Warehouse::find($fromId)->city . ' to ' . Warehouse::find($toId)->city);
@@ -122,28 +150,35 @@ class WarehouseRouteController extends Controller
     {
         $courierId = auth()->id();
 
-        $packages = Package::with('latestActualization')
-            ->whereHas('latestActualization', function ($query) use ($fromId, $toId, $courierId) {
-                $query->where('current_warehouse_id', $fromId)
-                    ->where('next_warehouse_id', $toId)
-                    ->where('last_courier_id', $courierId)
-                    ->where('message', 'in_warehouse');
-            })
-            ->get();
+        $route = Route::where('from_warehouse_id', $fromId)
+            ->where('to_warehouse_id', $toId)
+            ->where('courier_id', $courierId)
+            ->first();
 
-        foreach ($packages as $package) {
-            $latest = $package->latestActualization;
-            $routeRemaining = json_decode($latest->route_remaining, true);
+        if (!$route) {
+            return back()->withErrors('Route not found or not taken by you.');
+        }
+
+        // Fetch actualizations filtered by courier_id, from and to warehouses, and other conditions
+        $actualizations = Actualization::where([
+            ['current_warehouse_id', $fromId],
+            ['next_warehouse_id', $toId],
+            ['last_courier_id', $courierId],
+            ['message', 'in_warehouse'],
+        ])->get();
+
+        foreach ($actualizations as $actualization) {
+            $package = $actualization->package;
+            $routeRemaining = json_decode($actualization->route_remaining, true);
 
             if (is_array($routeRemaining)) {
                 array_shift($routeRemaining);
             }
 
-            $nextWarehouseId = is_array($routeRemaining) && count($routeRemaining) > 0
-                ? $routeRemaining[0]
-                : null;
+            $nextWarehouseId = (count($routeRemaining) > 0) ? $routeRemaining[0] : null;
 
-            Actualization::create([
+            // Create new actualization for arrival confirmation
+            $newActualization = Actualization::create([
                 'package_id' => $package->id,
                 'route_remaining' => json_encode($routeRemaining),
                 'current_warehouse_id' => $toId,
@@ -154,11 +189,27 @@ class WarehouseRouteController extends Controller
             ]);
         }
 
+        // Update route status to arrived, clear courier assignment (or adjust as per your logic)
+        $route->update([
+            'status' => 'arrived',
+        ]);
+
         return back()->with('status', 'Arrival confirmed at ' . Warehouse::find($toId)->city);
     }
 
     public function confirmReturn(Request $request, $fromId, $toId)
     {
+        $courierId = auth()->id();
+
+        $route = Route::where('from_warehouse_id', $fromId)
+            ->where('to_warehouse_id', $toId)
+            ->where('courier_id', $courierId)
+            ->first();
+
+        if (!$route) {
+            return back()->withErrors('Return route not found or not taken by you.');
+        }
+
         $courierId = auth()->id();
 
         $packages = Package::with('latestActualization')
@@ -192,8 +243,11 @@ class WarehouseRouteController extends Controller
                 'created_at' => now(),
             ]);
 
-            // $package->advancePackage();
         }
+
+        $route->update([
+            'status' => 'available',
+        ]);
 
         return back()->with('status', 'Returned to ' . Warehouse::find($toId)->city);
     }
@@ -204,8 +258,10 @@ class WarehouseRouteController extends Controller
         $staff = $courier->staff;
         $motherWarehouseId = $staff->warehouse_id;
 
-        // Get packages that are IN TRANSIT, currently in some warehouse (not mother),
-        // have no next_warehouse assigned (stuck), but have motherWarehouseId in route_remaining
+        $route = Route::where('from_warehouse_id', $motherWarehouseId)
+            ->where('courier_id', $courier)
+            ->first();
+
         $packages = Package::with('latestActualization')
             ->where('status', PackageStatus::IN_TRANSIT)
             ->get()
@@ -213,7 +269,6 @@ class WarehouseRouteController extends Controller
                 $a = $package->latestActualization;
                 if (!$a) return false;
 
-                // Decode route_remaining to array, must be valid
                 $routeRemaining = json_decode($a->route_remaining, true);
                 if (!is_array($routeRemaining) || empty($routeRemaining)) {
                     return false;
@@ -244,7 +299,24 @@ class WarehouseRouteController extends Controller
             ]);
         }
 
+        $route->update([
+            'status' => 'returning',
+        ]);
+
         return back()->with('status', 'Started return trip to your mother warehouse.');
+    }
+
+    public function getRouteStatus(int $fromId, int $toId)
+    {
+        $route = Route::where('from_warehouse_id', $fromId)
+            ->where('to_warehouse_id', $toId)
+            ->first();
+
+        if (!$route) {
+            return response()->json(['status' => 'available']);
+        }
+
+        return response()->json(['status' => $route->status]);
     }
 
     public function myPackages()
@@ -253,84 +325,4 @@ class WarehouseRouteController extends Controller
 
         return view('warehouse.delivery.my_packages', compact('packages'));
     }
-    private function getRouteStatus($route, $currentWarehouseId, $courierId)
-    {
-        $from = $route['from']->id;
-        $to = $route['to']->id;
-
-        $packages = Package::with('latestActualization')->get();
-
-        $enRoutePackages = $packages->filter(function ($package) use ($from, $to, $courierId) {
-            $a = $package->latestActualization;
-            return $a &&
-                $a->current_warehouse_id == $from &&
-                $a->next_warehouse_id == $to &&
-                $a->message === 'in_warehouse' &&
-                $a->last_courier_id == $courierId;
-        });
-
-        if ($enRoutePackages->count() > 0) {
-            return 'en_route';
-        }
-
-        $returnPackages = $packages->filter(function ($package) use ($from, $to, $courierId) {
-            $a = $package->latestActualization;
-            return $a &&
-                $a->current_warehouse_id == $to &&
-                $a->next_warehouse_id == $from &&
-                $a->message === 'in_warehouse' &&
-                $a->last_courier_id == $courierId;
-        });
-
-        if ($returnPackages->count() > 0) {
-            return 'returning';
-        }
-
-        // Check if route is arrived (packages just arrived to 'to' warehouse by courier)
-        $arrivedPackages = $packages->filter(function ($package) use ($from, $to) {
-            $a = $package->latestActualization;
-            return $a &&
-                $a->current_warehouse_id == $to &&
-                $a->next_warehouse_id != $to &&
-                $a->message === 'in_warehouse' &&
-                $a->last_courier_id === null;  // Courier has just arrived with packages
-        });
-
-        if ($arrivedPackages->count() > 0) {
-            return 'arrived';
-        }
-
-
-        // Check if there are packages waiting to be delivered (in warehouse waiting to depart)
-        $waitingToDeliver = $packages->filter(function ($package) use ($from, $to) {
-            $a = $package->latestActualization;
-            return $a &&
-                $a->current_warehouse_id == $from &&
-                $a->next_warehouse_id == $to &&
-                $a->message === 'in_warehouse' &&
-                $a->last_courier_id === null;
-        });
-
-        if ($waitingToDeliver->count() > 0) {
-            return 'available';
-        }
-
-        // Check if packages have arrived at destination warehouse (waiting to return)
-        $waitingToReturn = $packages->filter(function ($package) use ($from, $to) {
-            $a = $package->latestActualization;
-            return $a &&
-                $a->current_warehouse_id == $to &&
-                $a->next_warehouse_id == $from &&
-                $a->message === 'in_warehouse' &&
-                $a->last_courier_id === null;
-        });
-
-        if ($waitingToReturn->count() > 0) {
-            return 'available';
-        }
-
-        // No packages anywhere means route is really free to be taken (or hidden)
-        return 'available';
-    }
-
 }
