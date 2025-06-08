@@ -41,6 +41,21 @@ class Stash extends Model
     }
 
     /**
+     * Scope: Available stashes
+     * - No package currently inside
+     * - Not reserved or reservation expired
+     */
+    public function scopeAvailable(Builder $query): Builder
+    {
+        return $query->where('is_package_in', false)
+                     ->where(function ($q) {
+                         $q->whereNull('reserved_until')
+                           ->orWhere('reserved_until', '<=', now());
+                     })
+                     ->whereNull('package_id');
+    }
+
+    /**
      * Check if the stash is currently reserved
      */
     public function isReserved(): bool

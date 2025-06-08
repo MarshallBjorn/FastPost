@@ -12,7 +12,7 @@
         </div>
     </div>
     <p class="text-gray-600 mb-6">
-        Below are the postmats sending packages to your warehouse. Pick them up and bring them in.
+        The following postmats are scheduled for package drop-off and pick-up.
     </p>
 
     @if ($postmatRoutes->count() > 0)
