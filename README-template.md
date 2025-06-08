@@ -67,19 +67,176 @@ Projekt przedstawia symulację systemu paczkomatów, stworzoną w środowisku ak
 
 
 ### Uruchomienie aplikacji
+Przygotowano poradnik uruchomienia aplikacji laravel w środowisku dockera dla systemów: Windows, Linux, MacOS
 
-Napisać, co trzeba mieć zainstalowane (oraz inne potrzebne dodatkowe informacje).
+#### Windows:
+Włączyć skrypt ```start.bat```
 
 ```
-Umieścić komendy z start.bat
+@echo off
+REM Initialize FastPost project with Docker and run seeders
+REM ------------------------------------------------------
 
+echo Changing directory to src...
+cd src || (
+    echo Failed to change directory to src
+    pause
+    exit /b 1
+)
+
+echo Current directory: %CD%
+echo Copying .env.example to .env...
+copy /Y .env.example .env || (
+    echo Failed to copy .env file
+    pause
+    exit /b 1
+)
+
+
+echo Returning to project root directory...
+cd .. || (
+    echo Failed to return to root directory
+    pause
+    exit /b 1
+)
+
+echo Current directory after cd ..: %CD%
+echo Checking docker-compose version...
+docker-compose --version || (
+    echo docker-compose command not found
+    pause
+    exit /b 1
+)
+
+echo Building and starting Docker containers...
+docker-compose up -d --build || (
+    echo Docker-compose failed
+    echo Make sure Docker is installed and running
+    pause
+    exit /b 1
+)
+
+echo Generating application key...
+docker-compose exec app php artisan key:generate || (
+    echo Failed to generate application key
+    pause
+    exit /b 1
+)
+
+echo Running fresh migrations...
+docker-compose exec app php artisan migrate:fresh || (
+    echo Database migration failed
+    pause
+    exit /b 1
+)
+
+
+echo.
+echo Laravel application should now be accessible at:
+echo http://localhost:8000
+echo.
+
+REM SOMETIMES IT FAILS - READ THE README.MD ! 
+REM Prompt user to seed the database
+set /p SEED_DB=Would you like to seed the database? (Y/N): 
+if /i "%SEED_DB%"=="Y" (
+    echo Installing FakerPHP...
+    docker-compose exec app composer require fakerphp/faker --dev || (
+        echo Failed to install FakerPHP
+        pause
+        exit /b 1
+    )
+
+    echo Seeding the database...
+    docker-compose exec app php artisan db:seed || (
+        echo Database seeding failed
+        pause
+        exit /b 1
+    )
+
+    echo Database seeding completed successfully.
+) else (
+    echo Skipping database seeding.
+)
+
+
+echo.
+echo Laravel application should now be accessible at:
+echo http://localhost:8000
+echo.
+
+pause
 ```
 
-Przykładowi użytkownicy aplikacji:
-* administrator: jan@email.com 1234
-* użytkownik: anna@email.com 1234
-* ...
-* ...
+Przy Seedowaniu bazy danych, losowo występuje problem z instalacją Fakera w kontenerze (W szczególności na systemie Windows przy włączeniu start.bat), należy wtedy samemu uruchomić komendę:
+
+```
+docker-compose run --rm composer require fakerphp/faker --dev
+docker-compose exec app php artisan db:seed
+```
+
+
+
+#### MacOS/Linux
+
+Najpierw utwórz plik ```.env``` w folderze src:
+```bash
+cd src
+cp .env.example .env
+```
+
+Następnie, aby uruchomić lokalnie, wpisz:
+```
+docker-compose up -d --build
+docker-compose exec app php artisan migrate
+```
+
+Twoja aplikacja Laravel powinna być teraz dostępna pod adresem:
+```
+http://localhost:8000
+```
+
+#### Krótki poradnik dla Docker-compose
+- Aby zatrzymać kontenery:
+  ```bash
+  docker-compose down
+  ```
+
+- Aby ponownie uruchomić kontenery:
+  ```bash
+  docker-compose up -d
+  ```
+
+- Aby uruchomić polecenia Artisan:
+  ```bash
+  docker-compose exec app php artisan [polecenie]
+  ```
+
+- Aby wejść do kontenera aplikacji:
+  ```bash
+  docker-compose exec app bash
+  ```
+
+- Aby wyświetlić logi:
+  ```bash
+  docker-compose logs -f
+  ```
+---
+
+#### Seedowanie bazy danych
+- Aby wypełnić bazę danych danymi testowymi:
+  ```bash
+  docker-compose exec app composer require fakerphp/faker --dev
+  docker-compose exec app php artisan migrate:fresh
+  docker-compose exec app php artisan db:seed
+  ```
+
+  - Jeśli instalacja fakerphp nie powiedzie się (szczególnie na Windowsie), spróbuj:
+    ```
+    docker-compose run --rm composer require fakerphp/faker --dev
+    docker-compose exec app php artisan db:seed
+    ```
+
 
 ### Baza danych
 
