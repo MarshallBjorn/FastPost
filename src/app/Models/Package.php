@@ -132,6 +132,8 @@ class Package extends Model
 
         if (empty($route)) return;
 
+        $this->update(['status' => PackageStatus::IN_TRANSIT]);
+
         $current = array_shift($route);
         $next = $route[0] ?? null;
 

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Actualization;
 use App\Models\Postmat;
 use App\Models\Package;
+use App\Models\Stash;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,138 +17,172 @@ class PostmatRouteController extends Controller
 
     public function index(Request $request)
     {
-        $currentWarehouseId = auth()->user()->staff->warehouse_id;
-        $routes = [];
+        $user = auth()->user();
+        $currentWarehouseId = $user->staff->warehouse_id;
 
-        // Get all registered or in_transit packages that are in any stash with is_package_in = true
-        $packages = Package::whereIn('status', [PackageStatus::REGISTERED->value, PackageStatus::IN_TRANSIT->value])
+        $allPostmats = [];
+
+        // Fetch packages for pickup (start)
+        $start_packages = Package::whereIn('status', [PackageStatus::REGISTERED->value, PackageStatus::IN_TRANSIT->value])
             ->whereHas('stash', function (Builder $query) {
                 $query->where('is_package_in', true);
             })
             ->get();
 
-        foreach ($packages as $package) {
+        foreach ($start_packages as $package) {
             $actualization = $package->latestActualization;
+            $route = json_decode($actualization->route_remaining ?? '[]', true);
+            $postmat = $package->startPostmat;
 
-            if (!$actualization || !$actualization->route_remaining) {
+            if (!$postmat || ($route[0] ?? null) != $currentWarehouseId) {
                 continue;
             }
 
-            $route = json_decode($actualization->route_remaining, true);
-
-            if (!is_array($route) || count($route) < 1) {
-                continue;
-            }
-
-            $nextWarehouseId = $route[0]; // Next step should be the delivery guy’s warehouse
-
-            if ($nextWarehouseId != $currentWarehouseId) {
-                continue;
-            }
-
-            // Start postmat is now from the package field
-            $postmat = Postmat::where('id', $package->start_postmat_id)
-                ->where('status', 'active')
-                ->first();
-
-            if (!$postmat) {
-                continue;
-            }
-
-            if (!isset($routes[$postmat->id])) {
-                $distance = \App\Utils\DistanceUtils::haversineDistance(
-                    $postmat->latitude,
-                    $postmat->longitude,
-                    $postmat->warehouse->latitude,
-                    $postmat->warehouse->longitude
-                );
-
-                $routes[$postmat->id] = [
+            if (!isset($allPostmats[$postmat->id])) {
+                $allPostmats[$postmat->id] = [
                     'postmat' => $postmat,
-                    'count' => 0,
-                    'distance' => $distance,
+                    'pickup_count' => 0,
+                    'delivery_count' => 0,
+                    'distance' => \App\Utils\DistanceUtils::haversineDistance(
+                        $postmat->latitude,
+                        $postmat->longitude,
+                        $postmat->warehouse->latitude,
+                        $postmat->warehouse->longitude
+                    ),
                 ];
             }
 
-            $routes[$postmat->id]['count']++;
+            $allPostmats[$postmat->id]['pickup_count']++;
+        }
+
+        // Fetch packages for delivery (end)
+        $dest_packages = Package::with('latestActualization.currentWarehouse', 'destinationPostmat.warehouse')
+            ->where('status', PackageStatus::IN_TRANSIT)
+            ->whereHas('destinationPostmat', function ($q) {
+                $q->where('status', 'active');
+            })
+            ->get()
+            ->filter(function ($package) {
+                $latest = $package->latestActualization;
+                $routeRemaining = optional($latest)->route_remaining;
+                $message = optional($latest)->message;
+
+                // Keep only if route_remaining is empty AND message is NOT 'in_delivery'
+                return empty(json_decode($routeRemaining ?? '[]', true)) && $message !== 'in_delivery';
+            });
+
+        foreach ($dest_packages as $package) {
+            $postmat = $package->destinationPostmat;
+
+            if (!$postmat || optional($package->latestActualization)->currentWarehouse?->id != $currentWarehouseId) continue;
+
+            if (!isset($allPostmats[$postmat->id])) {
+                $allPostmats[$postmat->id] = [
+                    'postmat' => $postmat,
+                    'pickup_count' => 0,
+                    'delivery_count' => 0,
+                    'distance' => \App\Utils\DistanceUtils::haversineDistance(
+                        $postmat->warehouse->latitude,
+                        $postmat->warehouse->longitude,
+                        $postmat->latitude,
+                        $postmat->longitude
+                    ),
+                ];
+            }
+
+            $allPostmats[$postmat->id]['delivery_count']++;
         }
 
         return view('postmat.delivery.index', [
-            'routes' => $routes,
+            'postmatRoutes' => collect($allPostmats)->values(),
         ]);
     }
 
-    public function pickup(Request $request, $postmatId)
+    public function pickup($postmatId)
     {
         $user = auth()->user();
         $currentWarehouseId = $user->staff->warehouse_id;
 
-        // Load the Postmat first and check warehouse assignment
-        $postmat = Postmat::where('id', $postmatId)
-            ->where('status', 'active')
-            ->first();
+        $postmat = Postmat::findOrFail($postmatId);
 
-        if (!$postmat) {
-            return redirect()->route('postmat.delivery.index')
-                ->with('error', 'Postmat not found or inactive.');
-        }
-
-        if ($postmat->warehouse_id != $currentWarehouseId) {
-            return redirect()->route('postmat.delivery.index')
-                ->with('error', 'You are not authorized to pick up packages from this postmat.');
-        }
-
-        // Get all packages from this postmat going to this warehouse
-        $packages = Package::where('start_postmat_id', $postmatId)
+        // === 1. START PACKAGES: pick up from postmat to warehouse ===
+        $startPackages = Package::where('start_postmat_id', $postmatId)
             ->where('status', PackageStatus::REGISTERED)
+            ->with('latestActualization')
             ->get();
 
-        foreach ($packages as $package) {
+        foreach ($startPackages as $package) {
             $actualization = $package->latestActualization;
+            $route = json_decode($actualization->route_remaining ?? '[]', true);
 
-            if (!$actualization || !$actualization->route_remaining) {
+            if (($route[0] ?? null) != $currentWarehouseId) {
                 continue;
             }
 
-            $route = json_decode($actualization->route_remaining, true);
-
-            if (!is_array($route) || count($route) < 1) {
-                continue;
-            }
-
-            $nextWarehouseId = $route[0];
-
-            // Make sure this package is going to this warehouse
-            if ($nextWarehouseId != $currentWarehouseId) {
-                continue;
-            }
-
-            // Update stash.is_package_in = false
+            // Clear from stash
             if ($package->stash) {
-                $package->stash->is_package_in = false;
-                $package->stash->reserved_until = null;
-                $package->stash->package_id = null;
-                $package->stash->save();
+                $package->stash->update([
+                    'is_package_in' => false,
+                    'reserved_until' => null,
+                    'package_id' => null,
+                ]);
             }
 
-            // Create new Actualization
+            // Record actualization
             Actualization::create([
                 'package_id' => $package->id,
                 'route_remaining' => json_encode($route),
                 'current_warehouse_id' => $currentWarehouseId,
-                'next_warehouse_id' => $route[0] ?? null, // could be null if last step
+                'next_warehouse_id' => $route[0] ?? null,
                 'message' => 'collected',
                 'last_courier_id' => $user->id,
                 'created_at' => now(),
             ]);
 
-            // Update package status
             $package->status = PackageStatus::IN_TRANSIT;
             $package->save();
         }
 
-        return redirect()->route('postmat.delivery.index')
-            ->with('success', 'Packages picked up successfully!');
+        // === 2. END PACKAGES: deliver from warehouse to postmat ===
+        $destinationPackages = Package::with('latestActualization')
+            ->where('destination_postmat_id', $postmatId)
+            ->where('status', PackageStatus::IN_TRANSIT)
+            ->get()
+            ->filter(function ($package) use ($currentWarehouseId) {
+                $a = $package->latestActualization;
+                return $a &&
+                    empty(json_decode($a->route_remaining ?? '[]')) &&
+                    $a->message === 'in_warehouse' &&
+                    $a->current_warehouse_id == $currentWarehouseId;
+            });
+
+        foreach ($destinationPackages as $package) {
+            $stash = $postmat->stashes()->available()->first();
+
+            if (!$stash) {
+                continue; // optionally log or flash error about no available stash
+            }
+
+            $stash->update([
+                'is_package_in' => true,
+                'package_id' => $package->id,
+                'reserved_until' => now()->addDay(),
+            ]);
+
+            Actualization::create([
+                'package_id' => $package->id,
+                'route_remaining' => json_encode([]),
+                'current_warehouse_id' => $currentWarehouseId,
+                'next_warehouse_id' => null,
+                'message' => 'in_delivery',
+                'last_courier_id' => $user->id,
+                'created_at' => now(),
+            ]);
+
+            $package->save();
+        }
+
+        return redirect()->route('postmat.delivery.index')->with('success', 'Packages moved successfully.');
     }
 
     public function putPackagesInWarehouse(Request $request)
@@ -211,6 +246,69 @@ class PostmatRouteController extends Controller
         }
 
         return redirect()->back()->with('success', $message);
+    }
+
+    public function deliverToPostmat(Request $request)
+    {
+        $packageIds = $request->input('package_ids', []);
+
+        if (empty($packageIds)) {
+            return back()->with('errors', ['No packages were selected.']);
+        }
+
+        $errors = [];
+        $successCount = 0;
+
+        foreach ($packageIds as $id) {
+            $package = Package::find($id);
+
+            if (!$package || !$package->destination_postmat_id) {
+                $errors[] = "Package #$id is invalid or missing destination postmat.";
+                continue;
+            }
+
+            // Find available stash
+            $stash = Stash::where('postmat_id', $package->destination_postmat_id)
+                ->get()
+                ->filter(function ($stash) {
+                    return $stash->isAvailable();
+                })
+                ->first();
+
+            if (!$stash) {
+                $errors[] = "No stash available for Package #$id.";
+                continue;
+            }
+
+            // Assign stash
+            $stash->update([
+                'package_id' => $package->id,
+                'reserved_until' => now()->addDays(3),
+                'is_package_in' => true,
+            ]);
+
+            // Log actualization (adjust fields as needed)
+            $package->actualizations()->create([
+                'route_remaining' => json_encode([]),
+                'current_warehouse_id' => null,
+                'next_warehouse_id' => null,
+                'message' => 'in_delivery',
+                'last_courier_id' => auth()->id(),
+                'created_at' => now(),
+            ]);
+
+            $package->status = PackageStatus::IN_POSTMAT;
+            $package->unlock_code = fake()->regexify('[0-9]{6}');
+            $package->pickup_code = $package->unlock_code;
+            $package->save();
+
+            $successCount++;
+        }
+
+        return back()->with([
+            'success' => "$successCount package(s) delivered.",
+            'errors' => $errors,
+        ]);
     }
 
     private function getDistanceBetween($fromId, $toId)

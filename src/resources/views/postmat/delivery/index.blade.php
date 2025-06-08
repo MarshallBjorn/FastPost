@@ -15,9 +15,9 @@
         Below are the postmats sending packages to your warehouse. Pick them up and bring them in.
     </p>
 
-    @if (count($routes) > 0)
+    @if ($postmatRoutes->count() > 0)
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            @foreach ($routes as $route)
+            @foreach ($postmatRoutes as $route)
                 <div class="bg-white p-4 rounded shadow hover:shadow-lg transition-shadow">
                     <h2 class="text-xl font-semibold text-blue-700 mb-2">
                         {{ $route['postmat']->name }}
@@ -31,21 +31,22 @@
                         </span>
                     </p>
                     <p class="mt-2 text-sm">
-                        📦 <strong>{{ $route['count'] }}</strong> packages ready<br>
-                        🧭 <strong>{{ number_format($route['distance'], 1) }} km</strong> from you
+                        📥 <strong>{{ $route['pickup_count'] }}</strong> pickup(s) to warehouse<br>
+                        📤 <strong>{{ $route['delivery_count'] }}</strong> delivery(ies) to postmat<br>
+                        🧭 <strong>{{ number_format($route['distance'], 1) }} km</strong> distance
                     </p>
                     <form action="{{ route('postmat.delivery.pickup', ['postmat' => $route['postmat']->id]) }}" method="POST" class="mt-4">
                         @csrf
                         <button type="submit"
                             class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
-                            Take All Packages
+                            Take In/Out Packages
                         </button>
                     </form>
                 </div>
             @endforeach
         </div>
     @else
-        <p class="text-gray-500 text-center">No packages are ready for pickup from postmats today.</p>
+        <p class="text-gray-500 text-center">No postmats have packages to move today.</p>
     @endif
 </div>
 @endsection
