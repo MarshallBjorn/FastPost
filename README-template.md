@@ -1,21 +1,21 @@
-# FastPost: When speed is mandatory.
+# FastPost: Kiedy prędkość jest obowiązkowa
 
-[Repozytorium projektu](https://github.com/users/abackia/repo1)
+[Projektowe repozytorium](https://github.com/MarshallBjorn/FastPost.git)
 
-[Tablica projektowa](https://github.com/users/abackia/projects/1)
-
----
-
-
-### About
-
-.........................
+[Tablica projektowa](https://github.com/users/MarshallBjorn/projects/3)
 
 ---
 
-### Team B2
 
-| Profile | Role |
+### O projekcie
+
+...
+
+---
+
+### Zespół B2
+
+| Profil | Rola |
 | ------ | ------ |
 | [Oleksii Nawrocki](https://github.com/MarshallBjorn) | lider zespołu |
 | [Tomasz Nowak](https://github.com/Tnovyloo) | członek zespołu |
