@@ -25,15 +25,17 @@ class WarehouseRouteController extends Controller
                 $actualization = $package->latestActualization;
                 return $actualization &&
                     $actualization->route_remaining &&
-                    $actualization->message == 'in_warehouse' &&
-                    ($actualization->current_warehouse_id == $currentWarehouseId ||
-                    $actualization->next_warehouse_id == $currentWarehouseId);
+                    $actualization->message === 'in_warehouse' &&
+                    (
+                        $actualization->current_warehouse_id == $currentWarehouseId ||
+                        $actualization->next_warehouse_id == $currentWarehouseId
+                    );
             });
 
         $grouped = $packages->groupBy(function ($package) {
             $a = $package->latestActualization;
             $ids = [$a->current_warehouse_id, $a->next_warehouse_id];
-            sort($ids); // always smallest-first, ensures 1-2 and 2-1 are grouped
+            sort($ids);
             return implode('-', $ids);
         });
 
@@ -41,10 +43,7 @@ class WarehouseRouteController extends Controller
 
         foreach ($grouped as $key => $groupPackages) {
             [$idA, $idB] = explode('-', $key) + [null, null];
-
-            if (!is_numeric($idA) || !is_numeric($idB)) {
-                continue;
-            }
+            if (!is_numeric($idA) || !is_numeric($idB)) continue;
 
             $fromAtoB = $groupPackages->filter(function ($p) use ($idA, $idB) {
                 $a = $p->latestActualization;
@@ -56,30 +55,53 @@ class WarehouseRouteController extends Controller
                 return $a->current_warehouse_id == $idB && $a->next_warehouse_id == $idA;
             });
 
-            // Only continue if there are packages in either direction
-            if ($fromAtoB->count() === 0 && $fromBtoA->count() === 0) {
-                continue; // skip routes without any packages
-            }
+            $response = $this->getRouteStatus($idA, $idB);
+            $data = json_decode($response->getContent(), true);
+            $status = $data['status'] ?? 'available';
 
-            $routeData = [
+            $routes[$key] = [
                 'from' => Warehouse::find($idA),
                 'to' => Warehouse::find($idB),
                 'count_to_deliver' => $fromAtoB->count(),
                 'count_to_return' => $fromBtoA->count(),
                 'distance' => $this->getDistanceBetween($idA, $idB) ?? $this->getDistanceBetween($idB, $idA),
+                'status' => $status,
             ];
+        }
 
-            $response = $this->getRouteStatus($routeData['from']->id, $routeData['to']->id);
+        // Add fallback for any ongoing DB route not already in $routes
+        $existingKeys = collect($routes)->keys();
+
+        $activeDbRoutes = Route::whereNotNull('courier_id')
+            ->where('status', '!=', 'completed')
+            ->get();
+
+        foreach ($activeDbRoutes as $route) {
+            $idA = $route->from_warehouse_id;
+            $idB = $route->to_warehouse_id;
+            $ids = [$idA, $idB];
+            sort($ids);
+            $key = implode('-', $ids);
+
+            if ($existingKeys->contains($key)) continue;
+
+            $response = $this->getRouteStatus($idA, $idB);
             $data = json_decode($response->getContent(), true);
             $status = $data['status'] ?? 'available';
 
-            $routeData['status'] = $status;
-
-            $routes[$key] = $routeData;
+            $routes[$key] = [
+                'from' => Warehouse::find($idA),
+                'to' => Warehouse::find($idB),
+                'count_to_deliver' => 0,
+                'count_to_return' => 0,
+                'distance' => $this->getDistanceBetween($idA, $idB) ?? $this->getDistanceBetween($idB, $idA),
+                'status' => $status,
+            ];
         }
 
         return view('warehouse.delivery.index', compact('routes', 'packages'));
     }
+
 
     private function getDistanceBetween($fromId, $toId)
     {
@@ -189,6 +211,7 @@ class WarehouseRouteController extends Controller
             ]);
         }
 
+
         // Update route status to arrived, clear courier assignment (or adjust as per your logic)
         $route->update([
             'status' => 'arrived',
@@ -246,8 +269,8 @@ class WarehouseRouteController extends Controller
         }
 
         $route->update([
-            'status' => 'available',
-            'courier_id' => null,
+            'status' => 'completed',
+            'courier_id' => auth()->user()->id,
         ]);
 
         return back()->with('status', 'Returned to ' . Warehouse::find($toId)->city);
