@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Delivery;
 
 use App\Enums\PackageStatus;
 use App\Http\Controllers\Controller;
+use App\Models\WarehouseConnection;
 use App\Models\Actualization;
 use App\Models\Package;
 use App\Models\Warehouse;
@@ -24,40 +25,46 @@ class WarehouseRouteController extends Controller
                     $actualization->route_remaining &&
                     $actualization->message == 'in_warehouse' &&
                     ($actualization->current_warehouse_id == $currentWarehouseId ||
-                    $actualization->next_warehouse_id == $currentWarehouseId);
+                     $actualization->next_warehouse_id == $currentWarehouseId);
             });
 
         $grouped = $packages->groupBy(function ($package) {
-            $actualization = $package->latestActualization;
-            return $actualization->current_warehouse_id . '-' . $actualization->next_warehouse_id;
+            $a = $package->latestActualization;
+            $ids = [$a->current_warehouse_id, $a->next_warehouse_id];
+            sort($ids); // always smallest-first, ensures 1-2 and 2-1 are grouped
+            return implode('-', $ids);
         });
-
+        
         $routes = [];
 
         foreach ($grouped as $key => $groupPackages) {
-            // Parse from and to warehouse IDs from key
-            [$fromId, $toId] = explode('-', $key) + [null, null];
+            [$idA, $idB] = explode('-', $key) + [null, null];
 
-            if (!is_numeric($fromId) || !is_numeric($toId)) {
-                continue; // Skip this broken group
+            if (!is_numeric($idA) || !is_numeric($idB)) {
+                continue;
             }
 
-            $distance = $this->getDistanceBetween($fromId, $toId);
-            $returnKey = $toId . '-' . $fromId;
-            $returnCount = $grouped->has($returnKey) ? $grouped[$returnKey]->count() : 0;
+            $fromAtoB = $groupPackages->filter(function ($p) use ($idA, $idB) {
+                $a = $p->latestActualization;
+                return $a->current_warehouse_id == $idA && $a->next_warehouse_id == $idB;
+            });
+
+            $fromBtoA = $groupPackages->filter(function ($p) use ($idA, $idB) {
+                $a = $p->latestActualization;
+                return $a->current_warehouse_id == $idB && $a->next_warehouse_id == $idA;
+            });
 
             $routes[$key] = [
-                'from' => Warehouse::find($fromId),
-                'to' => Warehouse::find($toId),
-                'count' => $groupPackages->count(),
-                'return_count' => $returnCount,
-                'distance' => $distance,
-                'packages' => $groupPackages->values(),
-            ]; // reset keys for cleaner iteration
+                'from' => Warehouse::find($idA),
+                'to' => Warehouse::find($idB),
+                'count_to_deliver' => $fromAtoB->count(),
+                'count_to_return' => $fromBtoA->count(),
+                'distance' => $this->getDistanceBetween($idA, $idB) ?? $this->getDistanceBetween($idB, $idA),
+            ];
         }
 
         return view('warehouse.delivery.index', compact('routes', 'packages'));
-    }
+    }    
 
     private function getDistanceBetween($fromId, $toId)
     {
@@ -65,7 +72,7 @@ class WarehouseRouteController extends Controller
             return null;
         }
 
-        return \App\Models\WarehouseConnection::where('from_warehouse_id', $fromId)
+        return WarehouseConnection::where('from_warehouse_id', $fromId)
             ->where('to_warehouse_id', $toId)
             ->value('distance_km');
     }
@@ -145,8 +152,8 @@ class WarehouseRouteController extends Controller
 
         $packages = Package::with('latestActualization')
             ->whereHas('latestActualization', function ($query) use ($fromId, $toId, $courierId) {
-                $query->where('current_warehouse_id', $fromId)
-                    ->where('next_warehouse_id', $toId)
+                $query->where('current_warehouse_id', $toId)
+                    ->where('next_warehouse_id', $fromId)
                     ->where('last_courier_id', $courierId)
                     ->where('message', 'in_warehouse');
             })
@@ -160,17 +167,21 @@ class WarehouseRouteController extends Controller
                 array_shift($routeRemaining);
             }
 
+            $nextWarehouseId = is_array($routeRemaining) && count($routeRemaining) > 0
+                ? $routeRemaining[0]
+                : null;
+
             Actualization::create([
                 'package_id' => $package->id,
                 'route_remaining' => json_encode($routeRemaining),
-                'current_warehouse_id' => $toId,
-                'next_warehouse_id' => $routeRemaining[0],
+                'current_warehouse_id' => $fromId,
+                'next_warehouse_id' => $nextWarehouseId,
                 'message' => 'in_warehouse',
                 'last_courier_id' => null,
                 'created_at' => now(),
             ]);
 
-            $package->advancePackage(); // Optional
+            // $package->advancePackage();
         }
 
         return back()->with('status', 'Returned to ' . Warehouse::find($toId)->city);
@@ -182,29 +193,40 @@ class WarehouseRouteController extends Controller
         $staff = $courier->staff;
         $motherWarehouseId = $staff->warehouse_id;
 
-        // Find packages that are IN this warehouse and should go BACK to mother
+        // Get packages that are IN TRANSIT, currently in some warehouse (not mother),
+        // have no next_warehouse assigned (stuck), but have motherWarehouseId in route_remaining
         $packages = Package::with('latestActualization')
             ->where('status', PackageStatus::IN_TRANSIT)
             ->get()
-            ->filter(function ($package) use ($motherWarehouseId, $staff) {
+            ->filter(function ($package) use ($motherWarehouseId) {
                 $a = $package->latestActualization;
-                return $a &&
+                if (!$a) return false;
+
+                // Decode route_remaining to array, must be valid
+                $routeRemaining = json_decode($a->route_remaining, true);
+                if (!is_array($routeRemaining) || empty($routeRemaining)) {
+                    return false;
+                }
+
+                return
                     $a->message === 'in_warehouse' &&
                     $a->current_warehouse_id !== $motherWarehouseId &&
-                    $a->next_warehouse_id === null &&
-                    (
-                        is_array(json_decode($a->route_remaining, true)) &&
-                        in_array($motherWarehouseId, array_column(json_decode($a->route_remaining, true), 'to'))
-                    );
+                    $a->next_warehouse_id === $motherWarehouseId &&
+                    in_array($motherWarehouseId, $routeRemaining);
             });
 
         foreach ($packages as $package) {
             $a = $package->latestActualization;
+            $routeRemaining = json_decode($a->route_remaining, true);
+
+            // The next warehouse is the first warehouse in the route_remaining
+            $nextWarehouseId = $routeRemaining[0];
+
             Actualization::create([
                 'package_id' => $package->id,
-                'route_remaining' => $a->route_remaining,
+                'route_remaining' => $a->route_remaining,  // keep same route_remaining for now
                 'current_warehouse_id' => $a->current_warehouse_id,
-                'next_warehouse_id' => $motherWarehouseId,
+                'next_warehouse_id' => $nextWarehouseId,
                 'message' => 'in_warehouse',
                 'last_courier_id' => $courier->id,
                 'created_at' => now(),

@@ -21,22 +21,17 @@
                 </div>
             </div>
 
-            <p><strong>Packages to deliver:</strong> {{ $route['count'] }}</p>
-            <p><strong>Packages to return:</strong> {{ $route['return_count'] ?? 0 }}</p>
+            <p><strong>Packages to deliver:</strong> {{ $route['count_to_deliver'] }}</p>
+            <p><strong>Packages to return:</strong> {{ $route['count_to_return'] }}</p>
 
             {{-- Take Route --}}
-            <form action="{{ route('warehouse.delivery.take', [$route['from']->id, $route['to']->id]) }}" method="POST" class="mt-4">
+            <form action="{{ route('warehouse.delivery.take', [$route['from']->id, $route['to']->id]) }}" method="POST" class="inline-block mr-2">
                 @csrf
-                @foreach ($route['packages'] as $package)
-                    <input type="hidden" name="packages[]" value="{{ $package->id }}">
-                @endforeach
-                <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-                    🚚 Take Route
-                </button>
+                <button class="btn btn-primary">Take Route</button>
             </form>
 
             {{-- Confirm Arrival --}}
-            <form action="{{ route('warehouse.delivery.confirm_arrival', [$route['from']->id, $route['to']->id]) }}" method="POST" class="mt-2">
+            <form action="{{ route('warehouse.delivery.confirm_arrival', [$route['from']->id, $route['to']->id]) }}" method="POST" class="inline-block mr-2">
                 @csrf
                 <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
                     ✅ Confirm Arrival
@@ -44,7 +39,7 @@
             </form>
 
             {{-- Confirm Return --}}
-            <form action="{{ route('warehouse.delivery.confirm_return', [$route['to']->id, $route['from']->id]) }}" method="POST" class="mt-2">
+            <form action="{{ route('warehouse.delivery.confirm_return', [$route['from']->id, $route['to']->id]) }}" method="POST" class="inline-block">
                 @csrf
                 <button class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded">
                     🔄 Confirm Return
