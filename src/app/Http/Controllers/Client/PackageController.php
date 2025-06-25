@@ -51,13 +51,22 @@ class PackageController extends Controller
             $request->start_postmat
         ])->get();
 
+        
         $postmat = $postmats->firstWhere('name', $request->destination_postmat);
         $start_postmat = $postmats->firstWhere('name', $request->start_postmat);
+
+        if (!$postmat || !$start_postmat) {
+            return back()->withErrors(['destination_postmat' => 'Invalid postmat selection.'])->withInput();
+        }
 
         $available_stash = Stash::where('postmat_id', $start_postmat->id)
             ->where('size', $request->size)
             ->whereNull('package_id')
             ->first();
+
+        if (!$available_stash) {
+            return back()->withErrors(['start_postmat' => 'No available stashes of size ' . $request->size . ' in any postmat.'])->withInput();
+        }
 
         $original_start_postmat = $start_postmat;
         $stash_changed = false;
@@ -99,7 +108,7 @@ class PackageController extends Controller
 
                 $stash_changed = true;
             } else {
-                return back()->withErrors(['start_postmat' => 'No available stashes of size ' . $request->size . ' in any postmat.']);
+                return back()->withErrors(['start_postmat' => 'No available stashes of size ' . $request->size . ' in any postmat.'])->withInput();
             }
         }
 

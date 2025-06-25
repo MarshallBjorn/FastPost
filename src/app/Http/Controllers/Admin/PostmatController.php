@@ -85,17 +85,25 @@ class PostmatController extends Controller
      */
     public function update(Request $request, Postmat $postmat)
     {
-        $validated = $request->validate([
-            'name' => 'required|string',
-            'city' => 'required|string',
-            'post_code' => 'required|string',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'status' => 'required|in:active,unavailable,maintenance',
-        ]);
-
-        $postmat->update($validated);
-        return redirect()->route('postmats.index')->with('success', 'Postmat updated.');
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'city' => 'required|string|max:255',
+                'post_code' => 'required|string|max:10',
+                'latitude' => 'required|numeric|between:-90,90',
+                'longitude' => 'required|numeric|between:-180,180',
+                'status' => 'required|in:active,unavailable,maintenance',
+            ]);
+    
+            $postmat->update($validated);
+    
+            return redirect()->route('postmats.index')->with('success', 'Postmat updated.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()
+                ->back()
+                ->withErrors($e->validator)
+                ->withInput();
+        }
     }
 
     /**

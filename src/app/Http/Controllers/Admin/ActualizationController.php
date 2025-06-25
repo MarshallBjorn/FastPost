@@ -32,16 +32,25 @@ class ActualizationController extends Controller
 
     public function update(Request $request, Actualization $actualization)
     {
-        $validated = $request->validate([
-            'package_id' => 'required|exists:packages,id',
-            'message' => 'required|string',
-            'last_courier_id' => 'nullable|exists:users,id',
-            'last_warehouse_id' => 'nullable|exists:warehouses,id',
-            'created_at' => 'required|date',
-        ]);
-
-        $actualization->update($validated);
-        return redirect()->route('actualizations.index')->with('success', 'Actualization updated.');
+        try {
+            $validated = $request->validate([
+                'package_id' => 'required|exists:packages,id',
+                'message' => 'required|string|in:sent,in_warehouse,in_delivery',
+                'last_courier_id' => 'nullable|exists:users,id',
+                'last_warehouse_id' => 'nullable|exists:warehouses,id',
+                'created_at' => 'required|date',
+            ]);
+    
+            $actualization->update($validated);
+    
+            return redirect()->route('actualizations.index')->with('success', 'Actualization updated.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Redirect back with validation errors and input
+            return redirect()
+                ->back()
+                ->withErrors($e->validator)
+                ->withInput();
+        }
     }
 
     public function destroy(Actualization $actualization)
