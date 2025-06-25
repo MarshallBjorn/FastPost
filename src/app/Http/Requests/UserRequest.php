@@ -24,6 +24,14 @@ class UserRequest extends FormRequest
         // dd($validator->errors()->all());
     }
 
+    public function messages()
+    {
+        return [
+            'staff.warehouse_id.exists' => 'The selected warehouse is invalid or does not exist.',
+            'staff.termination_date.after' => 'The termination date must be after the hire date.',
+        ];
+    }
+
     public function rules(): array
     {
         $userId = $this->route('user')?->id;
@@ -49,11 +57,11 @@ class UserRequest extends FormRequest
             ],
 
             // Staff stuff
-            'staff_type' => ['nullable', 'in:admin,courier,warehouse', 'required_with:hire_date,warehouse_id'],
-            'hire_date' => ['nullable', 'date', 'required_with:staff_type'],
-            'warehouse_id' => ['nullable', 'exists:warehouses,id'],
+            'staff.staff_type' => ['nullable', 'in:admin,courier,warehouse', 'required_with:hire_date,warehouse_id'],
+            'staff.hire_date' => ['nullable', 'date', 'required_with:staff_type'],
+            'staff.warehouse_id' => ['nullable', 'exists:warehouses,id'],
             // Unused
-            'termination_date' => ['nullable', 'date', 'after_or_equal:hire_date'],
+            'staff.termination_date' => ['nullable', 'date', 'after_or_equal:hire_date'],
         ];
 
         if ($this->boolean('_profile_update')) {
