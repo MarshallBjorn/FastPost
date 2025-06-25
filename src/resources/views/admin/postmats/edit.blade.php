@@ -4,6 +4,18 @@
 <div class="max-w-3xl mx-auto p-4">
     <h2 class="text-xl font-bold mb-4">Edit Postmat</h2>
 
+    @if ($errors->any())
+        <div class="mb-4 p-4 bg-red-100 text-red-700 border border-red-400 rounded">
+            <strong>Something went wrong:</strong>
+            <ul class="mt-2 list-disc list-inside">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+
     <form method="POST" action="{{ route('postmats.update', $postmat) }}">
         @csrf
         @method('PUT')
