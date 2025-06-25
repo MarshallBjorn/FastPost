@@ -5,9 +5,9 @@
     <h1 class="text-2xl font-bold mb-4">Create Postmat</h1>
 
     @if ($errors->any())
-        <h1 class="mt-2 text-xl text-center text-red-600">Errors!</h1>
-        <div class="text-black p-4 mb-4 border-dotted border-2">
-            <ul>
+        <div class="mb-4 p-4 bg-red-100 text-red-700 border border-red-400 rounded">
+            <strong>Something went wrong:</strong>
+            <ul class="mt-2 list-disc list-inside">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -15,33 +15,48 @@
         </div>
     @endif
 
-    <form action="{{ route('postmats.store') }}" method="POST" class="space-y-4">
+    <form method="POST" action="{{ route('postmats.store') }}" class="space-y-4">
         @csrf
 
-        <div>
-            <label>Name</label>
-            <input type="text" name="name" placeholder="Name" class="form-input" required>
-        </div>
+        <label class="">Name</label>
+        <input type="text" class="form-input" name="name" value="{{ old('name') }}" required>
+        @error('name')
+            <p class="text-red-600 text-sm">{{ $message }}</p>
+        @enderror
 
-        <div>
-            <label>City</label>
-            <input type="text" name="city" placeholder="City" class="form-input" required>
-        </div>
+        <label class="">City</label>
+        <input type="text" class="form-input" name="city" value="{{ old('city') }}" required>
+        @error('city')
+            <p class="text-red-600 text-sm">{{ $message }}</p>
+        @enderror
 
-        <div>
-            <label>Post Code</label>
-            <input type="text" name="post_code" placeholder="Post Code" class="form-input" required>
-        </div>
+        <label class="">Post Code</label>
+        <input type="text" class="form-input" name="post_code" value="{{ old('post_code') }}" required>
+        @error('post_code')
+            <p class="text-red-600 text-sm">{{ $message }}</p>
+        @enderror
 
-        <div>
-            <label>Latitude</label>
-            <input type="text" name="latitude" placeholder="Latitude" class="form-input" required>
-        </div>
+        <label class="">Latitude</label>
+        <input type="text" class="form-input" name="latitude" value="{{ old('latitude') }}" required>
+        @error('latitude')
+            <p class="text-red-600 text-sm">{{ $message }}</p>
+        @enderror
 
-        <div>
-            <label>Longitude</label>
-            <input type="text" name="longitude" placeholder="Longitude" class="form-input" required>
-        </div>
+        <label class="">Longitude</label>
+        <input type="text" class="form-input" name="longitude" value="{{ old('longitude') }}" required>
+        @error('longitude')
+            <p class="text-red-600 text-sm">{{ $message }}</p>
+        @enderror
+
+        <label class="">Status</label>
+        <select name="status" class="form-input" required>
+            @foreach (['active', 'unavailable', 'maintenance'] as $status)
+                <option value="{{ $status }}" @selected(old('status') === $status)>{{ ucfirst($status) }}</option>
+            @endforeach
+        </select>
+        @error('status')
+            <p class="text-red-600 text-sm">{{ $message }}</p>
+        @enderror
 
         <div>
             <label>Pick Location</label>
@@ -79,16 +94,6 @@
                 });
             });
         </script>
-
-        <div>
-            <label>Status</label>
-            <select name="status" class="form-input" required>
-                <option value="">Select Status</option>
-                <option value="active">Active</option>
-                <option value="unavailable">Unavailable</option>
-                <option value="maintenance">Maintenance</option>
-            </select>
-        </div>
 
         <button class="form-submit">Create</button>
     </form>
