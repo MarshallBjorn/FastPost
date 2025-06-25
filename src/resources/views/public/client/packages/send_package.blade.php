@@ -25,36 +25,37 @@
 
         <div class="mb-4">
             <label for="email" class="block text-sm font-medium">Receiver's Email</label>
-            <input type="email" name="email" id="email" class="form-select w-full rounded-md border border-gray-300 shadow-sm px-3 py-2" required>
+            <input type="email" name="email" id="email" class="form-select w-full rounded-md border border-gray-300 shadow-sm px-3 py-2" value="{{ old('email') }}" required>
         </div>
         <div class="mb-4">
             <label for="phone" class="block text-sm font-medium">Receiver's Phone Number</label>
-            <input type="text" name="phone" id="phone" class="form-select w-full rounded-md border border-gray-300 shadow-sm px-3 py-2" required>
+            <input type="text" name="phone" id="phone" class="form-select w-full rounded-md border border-gray-300 shadow-sm px-3 py-2" value="{{ old('phone') }}" required>
         </div>
 
         <div class="mb-4">
             <label for="weight" class="block text-sm font-medium">Weight in grams</label>
-            <input type="number" name="weight" id="weight" class="form-select w-full rounded-md border border-gray-300 shadow-sm px-3 py-2" required>
+            <input type="number" name="weight" id="weight" class="form-select w-full rounded-md border border-gray-300 shadow-sm px-3 py-2" value="{{ old('weight') }}" required>
         </div>
 
         <div class="mb-4">
             <label for="size" class="block text-sm font-medium">Package Size</label>
             <select name="size" id="size" class="form-select w-full rounded-md border border-gray-300 shadow-sm px-3 py-2" required>
                 <option value="">Select Size</option>
-                <option value="S">S</option>
-                <option value="M">M</option>
-                <option value="L">L</option>
+                <option value="S" @selected(old('size') == 'S')>S</option>
+                <option value="M" @selected(old('size') == 'M')>M</option>
+                <option value="L" @selected(old('size') == 'L')>L</option>
             </select>
         </div>
 
+
         <div class="mb-4">
-            <label for="start_postmat" class="block text-sm font-medium">Initial Postmat (Sender)</label>
-            <input type="text" name="start_postmat" id="start_postmat" class="form-select w-full rounded-md border border-gray-300 shadow-sm px-3 py-2" required>
+            <label for="start_postmat" class="block text-sm font-medium">Initial Postmat</label>
+            <input type="text" name="start_postmat" id="start_postmat" class="form-select w-full rounded-md border border-gray-300 shadow-sm px-3 py-2" value="{{ old('start_postmat') }}" required>
         </div>
 
         <div class="mb-4">
-            <label for="destination_postmat" class="block text-sm font-medium">Postmat Destination (Receiver)</label>
-            <input type="text" name="destination_postmat" id="destination_postmat" class="form-select w-full rounded-md border border-gray-300 shadow-sm px-3 py-2" required>
+            <label for="destination_postmat" class="block text-sm font-medium">Postmat Destination</label>
+            <input type="text" name="destination_postmat" id="destination_postmat" class="form-select w-full rounded-md border border-gray-300 shadow-sm px-3 py-2" value="{{ old('destination_postmat') }}" required>
         </div>
 
         <div class="mb-4">

@@ -61,12 +61,12 @@ class PackageController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'sender_id' => 'nullable|exists:users,id',
+            'sender_id' => 'required|exists:users,id',
             'receiver_id' => 'nullable|exists:users,id',
-            'start_postmat_id' => 'nullable|exists:postmats,id',
-            'destination_postmat_id' => 'nullable|exists:postmats,id',
+            'start_postmat_id' => 'required|exists:postmats,id',
+            'destination_postmat_id' => 'required|exists:postmats,id',
             'receiver_email' => 'required|email',
-            'receiver_phone' => 'required|string',
+            'receiver_phone' => 'required|string|max:14',
             'status' => 'required|string|in:registered,in_transit,in_postmat,collected',
             'size' => 'required|in:S,M,L',
             'weight' => 'required|integer|min:1',
@@ -78,35 +78,34 @@ class PackageController extends Controller
             'size.in' => 'The package size must be one of the following: S, M, L',
         ]);
 
-        if (empty($validated['sender_id']) || !User::find($validated['sender_id'])) {
-            $sender = User::create([
-                'first_name' => 'GenName',
-                'last_name' => 'GenLastName',
-                'phone' => $validated['receiver_phone'],
-                'name' => 'Generated Sender',
-                'email' => 'sender_' . uniqid() . '@example.com',
-                'password' => bcrypt('secret'),
-            ]);
-            $validated['sender_id'] = $sender->id;
-        }
-
-        if (empty($validated['destination_postmat_id']) || !Postmat::find($validated['destination_postmat_id'])) {
-            $postmat = Postmat::create([
-                'name' => 'Fastpost-Tokyo',
-                'city' => 'Tokyo',
-                'post_code' => '33-200',
-                'latitude' => 35.6895,
-                'longitude' => 139.8394,
-                'status' => 'active'
-            ]);
-            $validated['destination_postmat_id'] = $postmat->id;
-        }
-
+        // Create the package
         $package = Package::create($validated);
 
+        // Generate the route path (if applicable)
+        $startPostmat = Postmat::find($validated['start_postmat_id']);
+        $destinationPostmat = Postmat::find($validated['destination_postmat_id']);
+
+        if ($startPostmat && $destinationPostmat) {
+            $pathfinder = new \App\Services\Pathfinder();
+            $routePath = $pathfinder->findPath($startPostmat->warehouse_id, $destinationPostmat->warehouse_id);
+    
+            // Store the route path in the package
+            $package->update(['route_path' => json_encode($routePath)]);
+    
+            // Create the initial actualization
+            Actualization::create([
+                'package_id' => $package->id,
+                'message' => 'sent',
+                'route_remaining' => json_encode($routePath),
+                'created_at' => now(),
+            ]);
+        }
+
+        // Create the actualization
         Actualization::create([
             'package_id' => $package->id,
             'message' => 'sent',
+            'route_remaining' => $routePath ? json_encode($routePath) : '[]', // Ensure route_remaining is not null
             'created_at' => now(),
         ]);
 
@@ -118,7 +117,6 @@ class PackageController extends Controller
         $package->load('latestActualization');
 
         $routePath = json_decode($package->route_path, true) ?? [];
-
         $routeRemaining = json_decode(optional($package->latestActualization)->route_remaining, true) ?? [];
 
         $warehouses = Warehouse::whereIn('id', $routePath)->get(['id', 'latitude', 'longitude', 'city']);
@@ -135,18 +133,41 @@ class PackageController extends Controller
 
     public function update(Request $request, Package $package)
     {
-        $data = $request->validate([
-            'sender_id' => 'nullable|exists:users,id',
+        $validated = $request->validate([
+            'sender_id' => 'required|exists:users,id',
             'receiver_id' => 'nullable|exists:users,id',
-            'start_postmat_id' => 'nullable|exists:postmats,id',
-            'destination_postmat_id' => 'nullable|exists:postmats,id',
+            'start_postmat_id' => 'required|exists:postmats,id',
+            'destination_postmat_id' => 'required|exists:postmats,id',
             'receiver_email' => 'required|email',
-            'receiver_phone' => 'required|string',
+            'receiver_phone' => 'required|string|max:14',
             'status' => 'required|string|in:registered,in_transit,in_postmat,collected',
+            'size' => 'required|in:S,M,L',
+            'weight' => 'required|integer|min:1',
             'unlock_code' => 'required|digits:6',
+        ], [
+            'status.in' => 'The status must be one of the following: registered, in_transit, in_postmat, collected.',
+            'weight.integer' => 'Weight must be an integer in grams.',
+            'weight.min' => 'Weight must be at least 1 gram.',
+            'size.in' => 'The package size must be one of the following: S, M, L',
         ]);
 
-        $package->update($data);
+        // Update the package
+        $package->update($validated);
+
+        // Update the route path if applicable
+        $startPostmat = Postmat::find($validated['start_postmat_id']);
+        $destinationPostmat = Postmat::find($validated['destination_postmat_id']);
+
+        $routePath = null;
+        if ($startPostmat && $destinationPostmat) {
+            $pathfinder = new \App\Services\Pathfinder();
+            $routePath = $pathfinder->findPath($startPostmat->warehouse_id, $destinationPostmat->warehouse_id);
+        }
+
+        // Update the latest actualization with the new route path
+        $package->latestActualization()->update([
+            'route_remaining' => $routePath ? json_encode($routePath) : '[]',
+        ]);
 
         return redirect()->route('packages.index', $request->query())->with('success', 'Package updated.');
     }

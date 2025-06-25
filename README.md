@@ -91,8 +91,10 @@ cp .env.example .env
 
 Następnie, aby uruchomić lokalnie, wpisz:
 ```
-docker-compose up -d --build
-docker-compose exec app php artisan migrate
+docker-compose up --build
+docker-compose run app sh -c "php artisan migrate"
+docker-compose run app sh -c "composer require fakerphp/faker --dev" 
+docker-compose run app sh -c "php artisan db:seed"
 ```
 
 Gdy projekt jest pierwszy raz włączany, należy wygenerować klucz.
