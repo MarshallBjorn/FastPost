@@ -51,7 +51,7 @@
                 <a href="{{ route('client.collect_package') }}" class="text-gray-700 hover:text-blue-600 transition">Collect a parcel</a>
                 @auth
                     <a href="{{ route('client.packages') }}" class="text-gray-700 hover:text-blue-600 transition">Your parcels</a>
-                    <a href="{{ route('client.packages') }}" class="text-gray-700 hover:text-blue-600 transition">Your profile</a>
+                    <a href="{{ route('profile.edit') }}" class="text-gray-700 hover:text-blue-600 transition">Your profile</a>
                     <form action="{{ route('logout') }}" method="POST" class="inline">
                         @csrf
                         <button type="submit" class="text-gray-700 hover:text-blue-600 transition">Logout {{auth()->user()->first_name}}</button>

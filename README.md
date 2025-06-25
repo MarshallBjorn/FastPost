@@ -135,7 +135,6 @@ http://localhost:8000
 #### Seedowanie bazy danych
 - Aby wypełnić bazę danych danymi testowymi:
   ```bash
-  docker-compose exec app composer require fakerphp/faker --dev
   docker-compose exec app php artisan migrate:fresh
   docker-compose exec app php artisan db:seed
   ```
