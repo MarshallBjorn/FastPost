@@ -298,7 +298,7 @@ class PostmatRouteController extends Controller
             ]);
 
             $package->status = PackageStatus::IN_POSTMAT;
-            $package->unlock_code = fake()->regexify('[0-9]{6}');
+            $package->unlock_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
             $package->pickup_code = $package->unlock_code;
             $package->save();
 
